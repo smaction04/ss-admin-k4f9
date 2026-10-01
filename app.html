@@ -232,7 +232,7 @@
 
     <div id="recordsPane" hidden>
       <div class="section-label">날짜별 합계 (최근 14일, 한국시간)</div>
-      <p class="note">하루는 사용자마다 '잠드는 시각'이 달라, 각자의 하루 시작 시각이 속한 날짜로 묶었어요. 전체 지급액은 룰렛·오퍼월 등 캐시함에 들어간 모든 적립의 합이에요. 룰렛 횟수가 빨간 ⚠로 보이면 '이용권 사용 횟수'와 '룰렛 기록 횟수'가 서로 다르다는 경고예요(정상이면 같은 숫자).</p>
+      <p class="note">하루는 사용자마다 '잠드는 시각'이 달라, 각자의 하루 시작 시각이 속한 날짜로 묶었어요. 전체 지급액은 룰렛·오퍼월 등 캐시함에 들어간 모든 적립의 합이에요. 룰렛 횟수 / 이용권 받음은 '쓴 개수 / 받은 개수'예요(예: 5 / 7 = 7장 받아 5번 돌림). 빨간 ⚠가 보이면 '이용권 사용 횟수'와 '룰렛 기록 횟수'가 서로 다르다는 경고예요(정상이면 같은 숫자).</p>
       <div class="tbl-wrap"><table class="tbl" id="dailyTable"></table></div>
 
       <div class="section-label">사용자별 하루 기록 (최근 100건)</div>
@@ -399,15 +399,15 @@ async function loadRecords(){
     return;
   }
   $('dailyTable').innerHTML =
-    `<tr><th>날짜</th><th>활동 유저</th><th>게이지 합(시간)</th><th>이용권 받음</th><th>룰렛 횟수</th><th>룰렛 획득(원)</th><th>전체 지급(원)</th></tr>` +
+    `<tr><th>날짜</th><th>활동 유저</th><th>게이지 합(시간)</th><th>룰렛 횟수 / 이용권 받음</th><th>룰렛 획득(원)</th><th>전체 지급(원)</th></tr>` +
     daily.data.map(r => `<tr><td>${esc(r.day.slice(5).replace('-', '/'))}</td><td class="mono">${won(r.active_users)}</td><td class="mono">${r.gauge_hours}</td>` +
-      `<td class="mono">${won(r.tickets_earned)}</td><td class="mono">${Number(r.tickets_used) === Number(r.spins) ? won(r.spins) : `<span style="color:var(--bad);font-weight:700" title="이용권 사용 ${won(r.tickets_used)}회 ≠ 룰렛 기록 ${won(r.spins)}회">⚠ ${won(r.spins)} (이용권 ${won(r.tickets_used)})</span>`}</td>` +
+      `<td class="mono">${Number(r.tickets_used) === Number(r.spins) ? `${won(r.spins)} / ${won(r.tickets_earned)}` : `<span style="color:var(--bad);font-weight:700" title="이용권 사용 ${won(r.tickets_used)}회 ≠ 룰렛 기록 ${won(r.spins)}회">⚠ ${won(r.spins)} (이용권 사용 ${won(r.tickets_used)}) / ${won(r.tickets_earned)}</span>`}</td>` +
       `<td class="mono">${won(r.roulette_claimed_krw)}</td><td class="mono">${won(r.total_payout_krw)}</td></tr>`).join('');
   $('userTable').innerHTML =
-    `<tr><th>하루 시작</th><th class="left">이메일</th><th>게이지</th><th>이용권 받음</th><th>룰렛 횟수</th><th>룰렛 획득(원)</th></tr>` +
+    `<tr><th>하루 시작</th><th class="left">이메일</th><th>게이지</th><th>룰렛 횟수 / 이용권 받음</th><th>룰렛 획득(원)</th></tr>` +
     (users.data.length ? users.data.map(r => `<tr><td>${esc(kstDate(r.cycle_start))} ${esc(kstTime(r.cycle_start))}</td><td class="left">${esc(r.email)}</td>` +
-      `<td class="mono">${esc(hm(r.gauge_ms))}</td><td class="mono">${won(r.earned)}</td><td class="mono">${won(r.used)}</td><td class="mono">${won(r.win_krw)}</td></tr>`).join('')
-      : `<tr><td colspan="6">아직 기록이 없어요</td></tr>`);
+      `<td class="mono">${esc(hm(r.gauge_ms))}</td><td class="mono">${won(r.used)} / ${won(r.earned)}</td><td class="mono">${won(r.win_krw)}</td></tr>`).join('')
+      : `<tr><td colspan="5">아직 기록이 없어요</td></tr>`);
 }
 
 async function renderDashboard(){
