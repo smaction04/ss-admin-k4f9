@@ -140,12 +140,10 @@
   .tab[aria-selected="true"]{ background:var(--accent); color:var(--accent-ink); border-color:transparent; }
   .tbl-wrap{ overflow-x:auto; margin-bottom:2rem; }
   table.tbl{ width:100%; border-collapse:collapse; font-size:0.85rem; white-space:nowrap; }
-  .tbl th{ text-align:right; color:var(--ink-soft); font-weight:700; font-size:0.74rem; padding:0.6rem 1rem 0.6rem 0; border-bottom:2px solid var(--line); }
-  .tbl td{ text-align:right; padding:0.75rem 1rem 0.75rem 0; border-bottom:1px solid var(--line); }
-  .tbl th:first-child, .tbl td:first-child{ text-align:left; }
-  .tbl th:last-child, .tbl td:last-child{ padding-right:0; }
+  /* 표 글자는 전부 가운데 정렬(제목줄·값·이메일 모두) */
+  .tbl th{ text-align:center; color:var(--ink-soft); font-weight:700; font-size:0.74rem; padding:0.6rem 0.7rem; border-bottom:2px solid var(--line); }
+  .tbl td{ text-align:center; padding:0.75rem 0.7rem; border-bottom:1px solid var(--line); }
   .tbl tr[data-i]:hover td{ background:var(--surface-2); }
-  .tbl td.left, .tbl th.left{ text-align:left; }
   .note{ font-size:0.75rem; color:var(--ink-faint); margin:-0.2rem 0 1.2rem; line-height:1.55; }
 
 
