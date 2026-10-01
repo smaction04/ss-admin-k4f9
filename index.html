@@ -399,12 +399,12 @@ async function loadRecords(){
     return;
   }
   $('dailyTable').innerHTML =
-    `<tr><th>날짜</th><th>활동 유저</th><th>게이지 합(시간)</th><th>이용권 받음</th><th>이용권 사용</th><th>룰렛 횟수</th><th>룰렛 획득(원)</th><th>전체 지급(원)</th></tr>` +
+    `<tr><th>날짜</th><th>활동 유저</th><th>게이지 합(시간)</th><th>이용권 받음</th><th>룰렛 횟수</th><th>룰렛 획득(원)</th><th>전체 지급(원)</th></tr>` +
     daily.data.map(r => `<tr><td>${esc(r.day.slice(5).replace('-', '/'))}</td><td class="mono">${won(r.active_users)}</td><td class="mono">${r.gauge_hours}</td>` +
-      `<td class="mono">${won(r.tickets_earned)}</td><td class="mono">${won(r.tickets_used)}</td><td class="mono">${won(r.spins)}</td>` +
+      `<td class="mono">${won(r.tickets_earned)}</td><td class="mono">${won(r.spins)}</td>` +
       `<td class="mono">${won(r.roulette_claimed_krw)}</td><td class="mono">${won(r.total_payout_krw)}</td></tr>`).join('');
   $('userTable').innerHTML =
-    `<tr><th>하루 시작</th><th class="left">이메일</th><th>게이지</th><th>이용권 받음</th><th>이용권 사용</th><th>룰렛 획득(원)</th></tr>` +
+    `<tr><th>하루 시작</th><th class="left">이메일</th><th>게이지</th><th>이용권 받음</th><th>룰렛 횟수</th><th>룰렛 획득(원)</th></tr>` +
     (users.data.length ? users.data.map(r => `<tr><td>${esc(kstDate(r.cycle_start))} ${esc(kstTime(r.cycle_start))}</td><td class="left">${esc(r.email)}</td>` +
       `<td class="mono">${esc(hm(r.gauge_ms))}</td><td class="mono">${won(r.earned)}</td><td class="mono">${won(r.used)}</td><td class="mono">${won(r.win_krw)}</td></tr>`).join('')
       : `<tr><td colspan="6">아직 기록이 없어요</td></tr>`);
