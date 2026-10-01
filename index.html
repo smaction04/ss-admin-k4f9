@@ -148,6 +148,23 @@
   .tbl td.left, .tbl th.left{ text-align:left; }
   .note{ font-size:0.75rem; color:var(--ink-faint); margin:-0.2rem 0 1.2rem; line-height:1.55; }
 
+
+  /* phone-fix-marker 폰 화면: 위쪽 줄(로고·이메일·버튼)이 폭을 밀어내 화면이 한쪽으로 쏠리던 문제 수정 + 양옆 여백 최소화 */
+  html{ -webkit-text-size-adjust:100%; }
+  body{ overflow-x:hidden; }
+  .page{ width:100%; }
+  @media (max-width: 640px){
+    .page{ padding:0.8rem 0.5rem 3rem; max-width:none; }
+    .topbar{ flex-wrap:wrap; gap:0.6rem; }
+    .topbar-right{ flex-wrap:wrap; width:100%; gap:0.45rem; }
+    .who{ flex:1 1 100%; overflow-wrap:anywhere; font-size:0.74rem; }
+    .btn{ white-space:nowrap; }
+    .brand-tag{ white-space:nowrap; }
+    .tiles{ grid-template-columns:1fr 1fr; gap:0.55rem; }
+    .tile{ padding:0.85rem 0.8rem; }
+    .tile-value{ font-size:1.3rem; }
+    .comp-row{ padding:0.8rem 0.85rem; }
+  }
   [hidden]{ display:none !important; }
   .skeleton{ color:var(--ink-faint); font-size:0.85rem; padding:2rem 0; text-align:center; }
 </style>
