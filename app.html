@@ -144,6 +144,13 @@
   .tbl th{ text-align:center; color:var(--ink-soft); font-weight:700; font-size:0.74rem; padding:0.6rem 0.7rem; border-bottom:2px solid var(--line); }
   .tbl td{ text-align:center; padding:0.75rem 0.7rem; border-bottom:1px solid var(--line); }
   .tbl tr[data-i]:hover td{ background:var(--surface-2); }
+  /* 의심 유저 카드 */
+  .scard{ border-bottom:1px solid var(--line); padding:0.95rem 0; }
+  .scard-head{ display:flex; align-items:center; justify-content:space-between; gap:0.6rem; flex-wrap:wrap; }
+  .scard-reasons{ list-style:none; margin:0.7rem 0 0; padding:0; display:flex; flex-direction:column; gap:0.65rem; }
+  .rtag{ display:inline-block; font-size:0.74rem; font-weight:700; padding:0.2rem 0.6rem; border-radius:999px; background:var(--bad-bg); color:var(--bad); }
+  .rwhy{ font-size:0.82rem; color:var(--ink); margin-top:0.3rem; line-height:1.5; }
+  .rdetail{ font-size:0.76rem; color:var(--ink-soft); margin-top:0.2rem; line-height:1.5; }
   .note{ font-size:0.75rem; color:var(--ink-faint); margin:-0.2rem 0 1.2rem; line-height:1.55; }
 
 
@@ -217,6 +224,16 @@
       <button class="tab" role="tab" id="tabStats" aria-selected="true">지표</button>
       <button class="tab" role="tab" id="tabRecords" aria-selected="false">전체 기록</button>
       <button class="tab" role="tab" id="tabUsers" aria-selected="false">사용자</button>
+      <button class="tab" role="tab" id="tabSuspects" aria-selected="false">의심 유저</button>
+    </div>
+
+    <div id="suspectsPane" hidden>
+      <div class="section-label">의심 유저 (의심 신호가 있는 사용자 · 신호 많은 순)</div>
+      <p class="note">각 사용자 아래에 <b>왜 의심되는지(이유)</b>와 근거를 적었어요. 이상 신호가 계속 쌓이면(24시간 안 3회) 서버가 자동으로 활동을 정지시키고, 여기서 '로그·조치'를 눌러 사용자 탭에서 정지 해제나 탈퇴 처리를 할 수 있어요.</p>
+      <div id="suspectList"></div>
+
+      <div class="section-label" style="margin-top:1.6rem">이상 신호 기록 (최근 순)</div>
+      <div class="tbl-wrap"><table class="tbl" id="anomalyTable"></table></div>
     </div>
 
     <div id="usersPane" hidden>
@@ -224,6 +241,7 @@
       <div class="tbl-wrap"><table class="tbl" id="usersTable"></table></div>
       <div id="userLogBox" hidden>
         <div class="section-label" id="userLogTitle">사용자 로그</div>
+        <div id="userActions" style="display:flex; gap:0.5rem; flex-wrap:wrap; margin:0 0 0.9rem;"></div>
         <div class="tbl-wrap"><table class="tbl" id="userLogTable"></table></div>
       </div>
     </div>
@@ -347,11 +365,49 @@ function showTab(name){
   $('statsPane').hidden = name !== 'stats';
   $('recordsPane').hidden = name !== 'records';
   $('usersPane').hidden = name !== 'users';
+  $('suspectsPane').hidden = name !== 'suspects';
   $('tabStats').setAttribute('aria-selected', String(name === 'stats'));
   $('tabRecords').setAttribute('aria-selected', String(name === 'records'));
   $('tabUsers').setAttribute('aria-selected', String(name === 'users'));
+  $('tabSuspects').setAttribute('aria-selected', String(name === 'suspects'));
   if (name === 'records') loadRecords();
   if (name === 'users') loadUsers();
+  if (name === 'suspects') loadSuspects();
+}
+
+// 의심 유저 탭: 사용자마다 카드로, 의심되는 이유(why)와 근거(detail)를 줄줄이 보여준다.
+async function loadSuspects(){
+  const list = $('suspectList');
+  list.innerHTML = '<div class="skeleton">불러오는 중...</div>';
+  const { data, error } = await sb.rpc('admin_suspects');
+  if (error) { list.innerHTML = `<div class="note">불러오기 실패: ${esc(error.message)} (db/0016을 Supabase에서 실행했는지 확인)</div>`; return; }
+  if (!data.length) {
+    list.innerHTML = '<div class="note" style="font-size:0.9rem">의심 신호가 있는 사용자가 없어요 👍</div>';
+  } else {
+    list.innerHTML = data.map((s, i) => `
+      <div class="scard">
+        <div class="scard-head">
+          <div><b>${esc(s.email || s.user_id)}</b> ${statusPill({ status: s.status, status_reason: s.status_reason })}
+            <span class="note" style="margin:0 0 0 0.5rem">신호 ${s.signal_count}개 · 마지막 ${esc(kstFull(s.last_signal_at))}</span></div>
+          <button class="btn" data-open="${i}">로그·조치 열기</button>
+        </div>
+        <ul class="scard-reasons">${(s.reasons || []).map(r => `
+          <li><span class="rtag">${esc(r.label)}</span>
+            <div class="rwhy">${esc(r.why)}</div>
+            <div class="rdetail mono">${esc(r.detail)} · ${esc(kstFull(r.last_at))}</div></li>`).join('')}
+        </ul>
+      </div>`).join('');
+    list.querySelectorAll('button[data-open]').forEach(b => b.onclick = () => openUserFromSuspects(data[Number(b.dataset.open)].user_id));
+  }
+  loadAnomalies();
+}
+
+// 의심 유저 카드에서 '로그·조치 열기' → 사용자 탭으로 이동해 그 사용자의 로그와 중지/해제/탈퇴 버튼을 연다.
+async function openUserFromSuspects(userId){
+  showTab('users');
+  await loadUsers();
+  const u = usersCache.find(x => x.user_id === userId);
+  if (u) showUserLog(u);
 }
 
 const kstFull = (iso) => iso ? new Date(iso).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) : '-';
@@ -365,16 +421,71 @@ async function loadUsers(){
   }
   usersCache = data;
   $('usersTable').innerHTML =
-    `<tr><th class="left">이메일</th><th>가입</th><th>마지막 로그인</th><th>잔액(원)</th><th>누적 적립(원)</th><th>룰렛 횟수</th><th>마지막 활동</th></tr>` +
-    data.map((r, i) => `<tr data-i="${i}" style="cursor:pointer"><td class="left">${esc(r.email || '(이메일 없음)')}${r.is_admin ? ' <span class="pill good">관리자</span>' : ''}</td><td class="mono">${esc(kstFull(r.created_at))}</td>` +
+    `<tr><th class="left">이메일</th><th>상태</th><th>가입</th><th>마지막 로그인</th><th>잔액(원)</th><th>누적 적립(원)</th><th>룰렛 횟수</th><th>마지막 활동</th></tr>` +
+    data.map((r, i) => `<tr data-i="${i}" style="cursor:pointer"><td class="left">${esc(r.email || '(이메일 없음)')}${r.is_admin ? ' <span class="pill good">관리자</span>' : ''}</td><td>${statusPill(r)}</td><td class="mono">${esc(kstFull(r.created_at))}</td>` +
       `<td class="mono">${esc(kstFull(r.last_sign_in_at))}</td><td class="mono">${won(r.balance_krw)}</td><td class="mono">${won(r.total_earned_krw)}</td>` +
       `<td class="mono">${won(r.spins)}</td><td class="mono">${esc(kstFull(r.last_activity))}</td></tr>`).join('');
   $('usersTable').querySelectorAll('tr[data-i]').forEach(tr => tr.onclick = () => showUserLog(usersCache[Number(tr.dataset.i)]));
 }
 
+function statusPill(r){
+  if (r.is_admin) return '<span class="pill good">관리자</span>';
+  if (r.status === 'suspended') return `<span class="pill bad" title="${esc(r.status_reason || '')}">정지</span>`;
+  if (r.status === 'withdrawn') return `<span class="pill bad" title="${esc(r.status_reason || '')}">탈퇴</span>`;
+  return '<span class="pill good">정상</span>';
+}
+
+// 이상 신호 목록(자동 정지의 근거). 새로 정지된 사용자가 있으면 한눈에 보이도록 상태도 같이 보여준다.
+async function loadAnomalies(){
+  const { data, error } = await sb.rpc('admin_anomalies', { p_limit: 50 });
+  if (error) { $('anomalyTable').innerHTML = `<tr><td>불러오기 실패: ${esc(error.message)} (db/0015를 Supabase에서 실행했는지 확인)</td></tr>`; return; }
+  $('anomalyTable').innerHTML = data.length
+    ? `<tr><th>시각</th><th class="left">이메일</th><th class="left">내용</th><th>현재 상태</th></tr>` +
+      data.map(r => `<tr><td class="mono">${esc(kstFull(r.at))}</td><td class="left">${esc(r.email)}</td><td class="left">${esc(r.detail)}</td><td>${statusPill({ status: r.status })}</td></tr>`).join('')
+    : `<tr><td>이상 신호가 없어요 👍</td></tr>`;
+}
+
+// 중지 / 해제 / 탈퇴. 되돌릴 수 없는 탈퇴는 한 번 더 확인한다.
+async function setUserStatus(u, status){
+  const label = { suspended: '활동 중지', active: '중지 해제', withdrawn: '탈퇴 처리' }[status];
+  if (status === 'withdrawn') {
+    if (!confirm(`정말 ${u.email} 계정을 탈퇴 처리할까요?\n\n· 로그인이 차단되고 되돌릴 수 없어요.\n· 캐시 장부 기록은 보관돼요(삭제되지 않음).`)) return;
+  } else if (!confirm(`${u.email} 계정을 "${label}" 할까요?`)) return;
+  const reason = prompt(`${label} 사유를 적어주세요(선택)`, '');
+  if (reason === null) return;
+  const { error } = await sb.rpc('admin_set_user_status', { p_user_id: u.user_id, p_status: status, p_reason: reason });
+  if (error) { alert('실패: ' + error.message); return; }
+  await loadUsers();
+  const fresh = usersCache.find(x => x.user_id === u.user_id);
+  if (fresh) showUserLog(fresh);
+}
+
+function renderUserActions(u){
+  const box = $('userActions');
+  box.innerHTML = '';
+  if (u.is_admin) { box.innerHTML = '<span class="note" style="margin:0">관리자 계정은 정지·탈퇴할 수 없어요.</span>'; return; }
+  const mk = (text, status, cls) => {
+    const b = document.createElement('button');
+    b.className = 'btn ' + (cls || '');
+    b.textContent = text;
+    b.onclick = () => setUserStatus(u, status);
+    box.appendChild(b);
+  };
+  if (u.status === 'withdrawn') { box.innerHTML = '<span class="note" style="margin:0">탈퇴 처리된 계정이에요(되돌릴 수 없음).</span>'; return; }
+  if (u.status === 'suspended') mk('중지 해제', 'active', 'primary');
+  else mk('활동 중지', 'suspended');
+  mk('탈퇴 처리', 'withdrawn');
+  if (u.status_reason) {
+    const n = document.createElement('span');
+    n.className = 'note'; n.style.margin = '0'; n.textContent = '사유: ' + u.status_reason;
+    box.appendChild(n);
+  }
+}
+
 async function showUserLog(u){
   $('userLogBox').hidden = false;
   $('userLogTitle').textContent = '사용자 로그 — ' + (u.email || u.user_id);
+  renderUserActions(u);
   $('userLogTable').innerHTML = '<tr><td>불러오는 중...</td></tr>';
   const { data, error } = await sb.rpc('admin_user_log', { p_user_id: u.user_id, p_limit: 300 });
   if (error) { $('userLogTable').innerHTML = `<tr><td>불러오기 실패: ${esc(error.message)}</td></tr>`; return; }
@@ -485,6 +596,7 @@ $('mfaCancel').onclick = async () => { await sb.auth.signOut(); location.reload(
 $('tabStats').onclick = () => showTab('stats');
 $('tabRecords').onclick = () => showTab('records');
 $('tabUsers').onclick = () => showTab('users');
+$('tabSuspects').onclick = () => showTab('suspects');
 $('sendCodeBtn').onclick = sendCode;
 
 renderDashboard();
