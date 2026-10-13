@@ -339,9 +339,29 @@ async function loadStats(){
   }
   const s = Array.isArray(data) ? data[0] : data;
 
+  // 기프티쇼 비즈머니 잔액: 열 때마다 새로 확인(서버가 1분 안 재확인은 건너뜀) 후 읽는다. 모자라면 사용자 교환이 전부 실패하므로 경고.
+  let bizRow = '';
+  try {
+    await sb.functions.invoke('gifticon-balance', { body: {} });
+    const { data: bd } = await sb.rpc('admin_gifticon_balance');
+    const g = Array.isArray(bd) ? bd[0] : bd;
+    if (g) {
+      const label = `기프티쇼 비즈머니 잔액 (${won(g.warn_krw)}원 미만이면 충전)`;
+      const when = new Date(g.checked_at).toLocaleString('ko-KR');
+      bizRow = `<div class="comp-row ${g.alert ? 'alert' : ''}">
+        <div>
+          <div class="comp-label">${label}</div>
+          <div class="comp-value mono">${g.balance_krw == null ? '확인 실패' : won(g.balance_krw)}<span class="tile-unit">${g.balance_krw == null ? '' : '원'}</span></div>
+          <div class="comp-label">마지막 확인 ${when}${g.ok ? '' : ' · 최근 확인 실패(' + (g.note || '') + ')'}</div>
+        </div>
+        <span class="pill ${g.alert ? 'bad' : 'good'}">${g.alert ? '⚠ 충전 필요' : '정상'}</span>
+      </div>`;
+    }
+  } catch (e) { /* 잔액 칸만 건너뜀 */ }
+
   $('complianceRow').innerHTML =
     complianceRow('현재 발행잔액 (기준 30억원)', s.outstanding_balance_krw, s.alert_outstanding) +
-    complianceRow('최근 1년 발행액 (기준 500억원)', s.annual_issued_krw, s.alert_annual);
+    complianceRow('최근 1년 발행액 (기준 500억원)', s.annual_issued_krw, s.alert_annual) + bizRow;
 
   $('todayTiles').innerHTML =
     tile('오늘 활성 유저 (DAU)', won(s.dau_today), '명') +
