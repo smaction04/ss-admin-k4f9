@@ -366,7 +366,7 @@ async function loadStats(){
       const ok = k.last_ok_at ? new Date(k.last_ok_at).toLocaleString('ko-KR') : '기록 없음';
       bizRow += `<div class="comp-row ${k.alert ? 'alert' : ''}">
         <div>
-          <div class="comp-label">카카오톡 알림 연결 (만료 14일 전부터 경고)</div>
+          <div class="comp-label">카카오톡 알림 연결 (만료 5일 전부터 경고)</div>
           <div class="comp-value mono">${k.days_left}<span class="tile-unit">일 남음</span></div>
           <div class="comp-label">마지막 갱신 성공 ${ok}${k.last_error ? ' · 최근 오류: ' + k.last_error : ''}</div>
         </div>
