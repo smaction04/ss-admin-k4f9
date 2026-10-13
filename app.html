@@ -358,6 +358,22 @@ async function loadStats(){
       </div>`;
     }
   } catch (e) { /* 잔액 칸만 건너뜀 */ }
+  // 카카오톡 알림 연결 상태: 갱신이 끊겨 refresh token이 만료되면 폰 알림이 조용히 멈추므로 여기서도 보이게 한다.
+  try {
+    const { data: kd } = await sb.rpc('admin_kakao_status');
+    const k = Array.isArray(kd) ? kd[0] : kd;
+    if (k) {
+      const ok = k.last_ok_at ? new Date(k.last_ok_at).toLocaleString('ko-KR') : '기록 없음';
+      bizRow += `<div class="comp-row ${k.alert ? 'alert' : ''}">
+        <div>
+          <div class="comp-label">카카오톡 알림 연결 (만료 14일 전부터 경고)</div>
+          <div class="comp-value mono">${k.days_left}<span class="tile-unit">일 남음</span></div>
+          <div class="comp-label">마지막 갱신 성공 ${ok}${k.last_error ? ' · 최근 오류: ' + k.last_error : ''}</div>
+        </div>
+        <span class="pill ${k.alert ? 'bad' : 'good'}">${k.alert ? '⚠ 연결 점검' : '정상'}</span>
+      </div>`;
+    }
+  } catch (e) { /* 연결 칸만 건너뜀 */ }
 
   $('complianceRow').innerHTML =
     complianceRow('현재 발행잔액 (기준 30억원)', s.outstanding_balance_krw, s.alert_outstanding) +
