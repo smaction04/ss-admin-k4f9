@@ -320,7 +320,7 @@ function complianceRow(label, valueWon, alert){
   return `<div class="comp-row ${alert ? 'alert' : ''}">
     <div>
       <div class="comp-label">${label}</div>
-      <div class="comp-value mono">${won(valueWon)}<span class="tile-unit">원</span></div>
+      <div class="comp-value mono">${won(valueWon)}<span class="tile-unit">cash</span></div>
     </div>
     <span class="pill ${alert ? 'bad' : 'good'}">${alert ? '⚠ 기준 초과' : '정상'}</span>
   </div>`;
@@ -346,12 +346,12 @@ async function loadStats(){
     const { data: bd } = await sb.rpc('admin_gifticon_balance');
     const g = Array.isArray(bd) ? bd[0] : bd;
     if (g) {
-      const label = `기프티쇼 비즈머니 잔액 (${won(g.warn_krw)}원 미만이면 충전)`;
+      const label = `기프티쇼 비즈머니 잔액 (${won(g.warn_krw)}cash 미만이면 충전)`;
       const when = new Date(g.checked_at).toLocaleString('ko-KR');
       bizRow = `<div class="comp-row ${g.alert ? 'alert' : ''}">
         <div>
           <div class="comp-label">${label}</div>
-          <div class="comp-value mono">${g.balance_krw == null ? '확인 실패' : won(g.balance_krw)}<span class="tile-unit">${g.balance_krw == null ? '' : '원'}</span></div>
+          <div class="comp-value mono">${g.balance_krw == null ? '확인 실패' : won(g.balance_krw)}<span class="tile-unit">${g.balance_krw == null ? '' : 'cash'}</span></div>
           <div class="comp-label">마지막 확인 ${when}${g.ok ? '' : ' · 최근 확인 실패(' + (g.note || '') + ')'}</div>
         </div>
         <span class="pill ${g.alert ? 'bad' : 'good'}">${g.alert ? '⚠ 충전 필요' : '정상'}</span>
@@ -376,17 +376,17 @@ async function loadStats(){
   } catch (e) { /* 연결 칸만 건너뜀 */ }
 
   $('complianceRow').innerHTML =
-    complianceRow('현재 발행잔액 (기준 30억원)', s.outstanding_balance_krw, s.alert_outstanding) +
-    complianceRow('최근 1년 발행액 (기준 500억원)', s.annual_issued_krw, s.alert_annual) + bizRow;
+    complianceRow('현재 발행잔액 (기준 30억 cash)', s.outstanding_balance_krw, s.alert_outstanding) +
+    complianceRow('최근 1년 발행액 (기준 500억 cash)', s.annual_issued_krw, s.alert_annual) + bizRow;
 
   $('todayTiles').innerHTML =
     tile('오늘 활성 유저 (DAU)', won(s.dau_today), '명') +
-    tile('오늘 지급액', won(s.today_payout_krw), '원');
+    tile('오늘 지급액', won(s.today_payout_krw), 'cash');
 
   $('totalTiles').innerHTML =
     tile('총 가입자', won(s.total_users), '명') +
-    tile('누적 지급액', won(s.total_payout_krw), '원') +
-    tile('현재 총 발행잔액', won(s.outstanding_balance_krw), '원');
+    tile('누적 지급액', won(s.total_payout_krw), 'cash') +
+    tile('현재 총 발행잔액', won(s.outstanding_balance_krw), 'cash');
 
   $('updatedAt').textContent = '마지막 갱신: ' + new Date().toLocaleString('ko-KR');
   $('dashView').hidden = false;
@@ -457,7 +457,7 @@ async function loadUsers(){
   }
   usersCache = data;
   $('usersTable').innerHTML =
-    `<tr><th class="left">이메일</th><th>상태</th><th>가입</th><th>마지막 로그인</th><th>잔액(원)</th><th>누적 적립(원)</th><th>룰렛 횟수</th><th>마지막 활동</th></tr>` +
+    `<tr><th class="left">이메일</th><th>상태</th><th>가입</th><th>마지막 로그인</th><th>잔액(cash)</th><th>누적 적립(cash)</th><th>룰렛 횟수</th><th>마지막 활동</th></tr>` +
     data.map((r, i) => `<tr data-i="${i}" style="cursor:pointer"><td class="left">${esc(r.email || '(이메일 없음)')}${r.is_admin ? ' <span class="pill good">관리자</span>' : ''}</td><td>${statusPill(r)}</td><td class="mono">${esc(kstFull(r.created_at))}</td>` +
       `<td class="mono">${esc(kstFull(r.last_sign_in_at))}</td><td class="mono">${won(r.balance_krw)}</td><td class="mono">${won(r.total_earned_krw)}</td>` +
       `<td class="mono">${won(r.spins)}</td><td class="mono">${esc(kstFull(r.last_activity))}</td></tr>`).join('');
@@ -526,7 +526,7 @@ async function showUserLog(u){
   const { data, error } = await sb.rpc('admin_user_log', { p_user_id: u.user_id, p_limit: 300 });
   if (error) { $('userLogTable').innerHTML = `<tr><td>불러오기 실패: ${esc(error.message)}</td></tr>`; return; }
   $('userLogTable').innerHTML =
-    `<tr><th>시각</th><th class="left">종류</th><th class="left">내용</th><th>금액(원)</th></tr>` +
+    `<tr><th>시각</th><th class="left">종류</th><th class="left">내용</th><th>금액(cash)</th></tr>` +
     (data.length ? data.map(r => `<tr><td class="mono">${esc(kstFull(r.at))}</td><td class="left">${esc(r.kind)}</td><td class="left">${esc(r.detail)}</td>` +
       `<td class="mono">${r.amount_krw == null ? '' : won(r.amount_krw)}</td></tr>`).join('') : `<tr><td colspan="4">기록이 없어요</td></tr>`);
   $('userLogBox').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -544,12 +544,12 @@ async function loadRecords(){
     return;
   }
   $('dailyTable').innerHTML =
-    `<tr><th>날짜</th><th>활동 유저</th><th>게이지 합(시간)</th><th>룰렛 횟수 / 이용권 받음</th><th>룰렛 획득(원)</th><th>전체 지급(원)</th></tr>` +
+    `<tr><th>날짜</th><th>활동 유저</th><th>게이지 합(시간)</th><th>룰렛 횟수 / 이용권 받음</th><th>룰렛 획득(cash)</th><th>전체 지급(cash)</th></tr>` +
     daily.data.map(r => `<tr><td>${esc(r.day.slice(5).replace('-', '/'))}</td><td class="mono">${won(r.active_users)}</td><td class="mono">${r.gauge_hours}</td>` +
       `<td class="mono">${Number(r.tickets_used) === Number(r.spins) ? `${won(r.spins)} / ${won(r.tickets_earned)}` : `<span style="color:var(--bad);font-weight:700" title="이용권 사용 ${won(r.tickets_used)}회 ≠ 룰렛 기록 ${won(r.spins)}회">⚠ ${won(r.spins)} (이용권 사용 ${won(r.tickets_used)}) / ${won(r.tickets_earned)}</span>`}</td>` +
       `<td class="mono">${won(r.roulette_claimed_krw)}</td><td class="mono">${won(r.total_payout_krw)}</td></tr>`).join('');
   $('userTable').innerHTML =
-    `<tr><th>하루 시작</th><th class="left">이메일</th><th>게이지</th><th>룰렛 횟수 / 이용권 받음</th><th>룰렛 획득(원)</th></tr>` +
+    `<tr><th>하루 시작</th><th class="left">이메일</th><th>게이지</th><th>룰렛 횟수 / 이용권 받음</th><th>룰렛 획득(cash)</th></tr>` +
     (users.data.length ? users.data.map(r => `<tr><td>${esc(kstDate(r.cycle_start))} ${esc(kstTime(r.cycle_start))}</td><td class="left">${esc(r.email)}</td>` +
       `<td class="mono">${esc(hm(r.gauge_ms))}</td><td class="mono">${won(r.used)} / ${won(r.earned)}</td><td class="mono">${won(r.win_krw)}</td></tr>`).join('')
       : `<tr><td colspan="5">아직 기록이 없어요</td></tr>`);
