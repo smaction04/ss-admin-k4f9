@@ -172,6 +172,8 @@
   }
   [hidden]{ display:none !important; }
   .skeleton{ color:var(--ink-faint); font-size:0.85rem; padding:2rem 0; text-align:center; }
+  /* 관리센터 안에 끼워 넣어 보일 때(?embed=1)는 위쪽 제목 줄을 숨긴다 */
+  html.embed .topbar{display:none}
 </style>
 
 <div class="page">
@@ -300,8 +302,11 @@ async function sendCode(){
   setLoginMsg('메일을 보냈어요. 메일의 \'Sign in\' 버튼을 누르면 이 화면으로 돌아와 로그인돼요.', 'ok');
 }
 
+if (new URLSearchParams(location.search).get('embed') === '1') document.documentElement.classList.add('embed');
+
 function renderTopbarSignedIn(email){
   $('topbarRight').innerHTML = `
+    <a class="btn ghost" href="./" style="text-decoration:none">관리센터</a>
     <span class="pill good">관리자</span>
     <span class="who">${esc(email)}</span>
     <button class="btn ghost" id="refreshBtn">새로고침</button>

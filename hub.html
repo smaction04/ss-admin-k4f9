@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="ko"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>슬립세이브 관리센터</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<style>
+/* 관제실과 같은 다크 우선 색. 밝은 테마는 기기 설정을 따름 */
+:root{--bg:#0A0C15;--surface:#131725;--surface-2:#1B2033;--line:#262C42;--ink:#EDEFF8;--ink-soft:#8C91AC;--ink-faint:#5C6182;
+  --accent:#7C9CFF;--accent-ink:#0A0F22;--good:#46D8A0;--good-bg:#123328;--warn:#F0B94E;--warn-bg:#3A2C10;--bad:#F2687A;--bad-bg:#3A1620;
+  --font:"Manrope","Noto Sans KR",system-ui,-apple-system,"Malgun Gothic",sans-serif}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#F4F5FA;--surface:#FFFFFF;--surface-2:#ECEEF6;--line:#DBDEEA;--ink:#161A2C;--ink-soft:#5B6080;--ink-faint:#9296AE;
+  --accent:#3E5FDB;--accent-ink:#FFFFFF;--good:#0F8F63;--good-bg:#E1F5EC;--warn:#9A6B0C;--warn-bg:#FBF0D8;--bad:#C23A50;--bad-bg:#FBE4E8}}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 var(--font);display:flex;flex-direction:column}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;text-align:left}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+code{font-family:ui-monospace,Consolas,monospace;font-size:.92em;background:var(--surface-2);padding:0 4px;border-radius:4px}
+
+.top{display:flex;align-items:center;gap:12px;padding:10px max(16px,env(safe-area-inset-left));border-bottom:1px solid var(--line);background:var(--surface)}
+.brand{font-weight:800;letter-spacing:-.01em;white-space:nowrap}
+.brand small{color:var(--ink-soft);font-weight:600;margin-left:6px}
+.nav{display:flex;gap:4px;overflow-x:auto;flex:1;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav a{padding:6px 12px;border-radius:8px;color:var(--ink-soft);text-decoration:none;white-space:nowrap;font-weight:600;font-size:13.5px}
+.nav a:hover{background:var(--surface-2)}
+.nav a[aria-current="page"]{background:var(--accent);color:var(--accent-ink)}
+.who{color:var(--ink-faint);font-size:12px;white-space:nowrap}
+.btn{border:1px solid var(--line);border-radius:8px;padding:5px 10px;font-size:12.5px;color:var(--ink-soft);background:var(--surface)}
+.btn:hover{background:var(--surface-2)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
+
+#view{flex:1;min-height:0;overflow:auto}
+.wrap{max-width:1200px;margin:0 auto;padding:16px max(16px,env(safe-area-inset-left)) 40px}
+.frame{border:0;width:100%;height:100%;display:block}
+.center{display:flex;align-items:center;justify-content:center;height:100%;padding:24px;text-align:center;color:var(--ink-soft)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+h1.pt{font-size:20px;margin:4px 0 2px;letter-spacing:-.01em}
+.sub{color:var(--ink-soft);font-size:12.5px;margin:0 0 14px}
+.grid{display:grid;gap:10px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+.tile b{display:block;font-size:11.5px;color:var(--ink-soft);font-weight:600}
+.tile span{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums}
+.chip{display:inline-block;border-radius:99px;padding:1px 9px;font-size:11.5px;font-weight:700;background:var(--surface-2);color:var(--ink-soft);white-space:nowrap}
+.chip.good{background:var(--good-bg);color:var(--good)}.chip.warn{background:var(--warn-bg);color:var(--warn)}.chip.bad{background:var(--bad-bg);color:var(--bad)}
+.sec-h{font-size:12px;letter-spacing:.05em;color:var(--ink-soft);font-weight:700;margin:20px 0 8px}
+.muted{color:var(--ink-soft)}
+.search{width:100%;max-width:420px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:7px 10px;font:inherit}
+@media (max-width:640px){.who{display:none}.brand small{display:none}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">🌘 SleepSave<small>관리센터</small></div>
+  <nav class="nav" id="nav" aria-label="메뉴"></nav>
+  <span class="who" id="who"></span>
+  <button class="btn" id="signOut" hidden>로그아웃</button>
+</header>
+<main id="view"><div class="center">불러오는 중...</div></main>
+
+<script>
+/* 관리센터 뼈대. 메뉴마다 따로 파일(p_*.js)이고, 눌렀을 때만 불러온다.
+   내용은 서버(admin_hub_docs)에서 관리자만 읽는다 — 이 저장소에는 내용이 없다. */
+const SUPABASE_URL = "https://mdcjpgbhpwjheaprogxr.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_jHw2UufXRWscdg4ZitfMGw_DHEagC8n"; // 공개용 anon key, 서버 함수가 관리자+2단계를 다시 확인한다
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const V = Date.now();
+const MENU = [
+  ['home','홈'],['ops','관제실'],['checklist','점검판'],['status','현황'],
+  ['preflight','출시 점검'],['vendors','업체'],['todo','결정·대기'],['links','바로가기']
+];
+const FILES = {home:'p_home.js',checklist:'p_checklist.js',status:'p_docs.js',preflight:'p_docs.js',vendors:'p_docs.js',todo:'p_docs.js',links:'p_links.js'};
+window.PAGES = {};
+const view = document.getElementById('view');
+const docCache = {};
+
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+/* 아주 작은 글자 꾸밈: **굵게**, `코드`, [글](https://링크), 맨 주소. 원문은 먼저 이스케이프한다 */
+function md(s){
+  return esc(s)
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>')
+    .replace(/(^|[\s(])(https?:\/\/[^\s<)]+)/g,'$1<a href="$2" target="_blank" rel="noopener">$2</a>')
+    .replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>')
+    .replace(/`([^`]+)`/g,'<code>$1</code>');
+}
+async function getDoc(key,force){
+  if(docCache[key]&&!force) return docCache[key];
+  const {data,error}=await sb.rpc('admin_hub_get',{p_key:key});
+  if(error) throw new Error(error.message);
+  if(!data||!data.length) throw new Error('문서 "'+key+'"가 서버에 아직 없어요 (sync_hub.py 실행 필요)');
+  return (docCache[key]=data[0]);
+}
+async function listDocs(){const {data,error}=await sb.rpc('admin_hub_list');if(error)throw new Error(error.message);return data||[]}
+function ago(iso){const m=Math.round((Date.now()-new Date(iso))/60000);if(m<1)return '방금';if(m<60)return m+'분 전';const h=Math.round(m/60);if(h<48)return h+'시간 전';return Math.round(h/24)+'일 전'}
+const ctx={sb,esc,md,getDoc,listDocs,ago,go:(p)=>{location.hash='#/'+p}};
+
+function loadScript(file){
+  return new Promise((res,rej)=>{
+    if(document.querySelector('script[data-p="'+file+'"]')) return res();
+    const s=document.createElement('script');s.src=file+'?v='+V;s.dataset.p=file;s.onload=res;s.onerror=()=>rej(new Error(file+' 불러오기 실패'));document.head.appendChild(s);
+  });
+}
+function drawNav(cur){
+  const nav=document.getElementById('nav');
+  nav.innerHTML=MENU.map(m=>'<a href="#/'+m[0]+'"'+(m[0]===cur?' aria-current="page"':'')+'>'+m[1]+'</a>').join('');
+}
+let token=0;
+async function route(){
+  const cur=(location.hash.replace(/^#\/?/,'')||'home').split('?')[0];
+  const page=MENU.some(m=>m[0]===cur)?cur:'home';
+  drawNav(page);
+  const my=++token;
+  if(page==='ops'){
+    view.innerHTML='<iframe class="frame" title="관제실" src="app.html?embed=1&t='+V+'"></iframe>';
+    return;
+  }
+  view.innerHTML='<div class="center">불러오는 중...</div>';
+  try{
+    await loadScript(FILES[page]);
+    if(my!==token) return;
+    const root=document.createElement('div');root.className='wrap';
+    view.innerHTML='';view.appendChild(root);
+    await window.PAGES[page].render(root,ctx,page);
+  }catch(e){
+    if(my!==token) return;
+    view.innerHTML='<div class="center"><div class="card" style="max-width:520px"><b>화면을 못 불러왔어요</b><p class="muted">'+esc(e.message)+'</p><button class="btn" onclick="route()">다시 시도</button></div></div>';
+  }
+}
+async function start(){
+  const {data:{session}}=await sb.auth.getSession();
+  if(!session){return gate('로그인이 필요해요. 로그인은 관제실 화면에서 합니다(메일 링크 → 폰 인증앱 6자리).')}
+  const {data:isAdmin}=await sb.rpc('is_admin');
+  if(isAdmin!==true){return gate('관리자 계정이 아니에요. 관리자 이메일로 다시 로그인해 주세요.')}
+  const {data:aal}=await sb.auth.mfa.getAuthenticatorAssuranceLevel();
+  if(!aal||aal.currentLevel!=='aal2'){return gate('폰 인증앱(2단계) 확인이 아직이에요. 관제실 화면에서 6자리를 입력해 주세요.')}
+  document.getElementById('who').textContent=session.user.email;
+  const so=document.getElementById('signOut');so.hidden=false;so.onclick=async()=>{await sb.auth.signOut();location.reload()};
+  window.addEventListener('hashchange',route);route();
+}
+function gate(msg){
+  drawNav('');
+  view.innerHTML='<div class="center"><div class="card" style="max-width:460px"><b>🔒 슬립세이브 관리센터</b><p class="muted">'+esc(msg)+'</p><a class="btn primary" style="text-decoration:none;display:inline-block" href="app.html">관제실에서 로그인</a></div></div>';
+}
+start();
+</script>
+</body></html>
