@@ -86,10 +86,12 @@ const SUPABASE_ANON_KEY = "sb_publishable_jHw2UufXRWscdg4ZitfMGw_DHEagC8n"; // �
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const V = Date.now();
 const MENU = [
-  ['home','홈','🏠','자주 쓰는 것'],['ops','관제실','📊'],['checklist','점검판','✅'],['status','현황','📋'],['todo','결정·대기','⏳'],
-  ['preflight','출시 점검','🚀','참고'],['vendors','업체','🤝'],['links','바로가기','🔗']
+  ['ops','관제실','📊','운영'],
+  ['home','요약','🏠','사업 콘텐츠'],['checklist','점검판','✅'],['status','현황','📋'],['todo','결정·대기','⏳'],['preflight','출시 점검','🚀'],['vendors','업체','🤝'],
+  ['guide_intro','서비스 소개서','📄','사업 가이드'],['guide_plan','단독 실행 기획서','🗺️'],['guide_screen','화면 설계','🎨'],['guide_gifti','기프티쇼 API','🎁'],
+  ['links','바로가기','🔗','도구']
 ];
-const FILES = {home:'p_home.js',checklist:'p_checklist.js',status:'p_docs.js',preflight:'p_docs.js',vendors:'p_docs.js',todo:'p_docs.js',links:'p_links.js'};
+const FILES = {home:'p_home.js',checklist:'p_checklist.js',status:'p_docs.js',preflight:'p_docs.js',vendors:'p_docs.js',todo:'p_docs.js',guide_intro:'p_docs.js',guide_plan:'p_docs.js',guide_screen:'p_docs.js',guide_gifti:'p_docs.js',links:'p_links.js'};
 window.PAGES = {};
 const view = document.getElementById('view');
 const docCache = {};
@@ -129,8 +131,8 @@ function drawNav(cur){
 }
 let token=0;
 async function route(){
-  const cur=(location.hash.replace(/^#\/?/,'')||'home').split('?')[0];
-  const page=MENU.some(m=>m[0]===cur)?cur:'home';
+  const cur=(location.hash.replace(/^#\/?/,'')||'ops').split('?')[0];
+  const page=MENU.some(m=>m[0]===cur)?cur:'ops';
   drawNav(page);
   const my=++token;
   if(page==='ops'){

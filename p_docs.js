@@ -10,7 +10,11 @@
     preflight:{key:'preflight',title:'출시 점검',sub:'PREFLIGHT.md — 출시 직전 체크리스트와 사전 점검 기록',
       pick:function(){return true}},
     todo:{key:'todo',title:'결정·대기',sub:'보류_할일.md — 사용자 결정·외부 회신·내가 할 일',
-      pick:function(){return true}}
+      pick:function(){return true}},
+    guide_intro:{key:'guide_intro',title:'서비스 소개서',sub:'서비스소개서.md',ordered:true,pick:function(){return true}},
+    guide_plan:{key:'guide_plan',title:'단독 실행 기획서',sub:'솔로실행기획서_fable.md — 전체 로드맵과 기획',ordered:true,pick:function(){return true}},
+    guide_screen:{key:'guide_screen',title:'화면 설계',sub:'Phase1_화면가이드.md · Phase1_화면구성안.md',ordered:true,pick:function(){return true}},
+    guide_gifti:{key:'guide_gifti',title:'기프티쇼 API',sub:'기프티쇼_API요점.md · 기프티쇼비즈_API_메모.md',ordered:true,pick:function(){return true}}
   };
 
   function tone(text){
@@ -41,7 +45,7 @@
     return d;
   }
 
-  ['status','vendors','preflight','todo'].forEach(function(name){
+  ['status','vendors','preflight','todo','guide_intro','guide_plan','guide_screen','guide_gifti'].forEach(function(name){
     window.PAGES[name]={render:async function(root,ctx,page){
       var cfg=CFG[page],esc=ctx.esc,md=ctx.md;
       var doc=await ctx.getDoc(cfg.key,true);
@@ -52,12 +56,20 @@
       var host=document.createElement('div');root.appendChild(host);
       secs.forEach(function(s,idx){
         var wrap=document.createElement('details');wrap.className='sec';
-        wrap.open=idx<2||/^0\./.test(s.h||'')||/다음 할 일|지금 출시를 막는/.test(s.h||'');
+        wrap.open=(cfg.ordered&&idx<4)||idx<2||/^0\./.test(s.h||'')||/다음 할 일|지금 출시를 막는/.test(s.h||'');
         var n=0;
         var inner=document.createElement('div');
-        (s.paras||[]).forEach(function(p){var e=document.createElement('div');e.className='note'+(/^0\./.test(s.h||'')?' warnbox':'');e.innerHTML=md(p);e.dataset.q=plain(p).toLowerCase();inner.appendChild(e);n++});
-        (s.tables||[]).forEach(function(t){(t.rows||[]).forEach(function(r){inner.appendChild(card(ctx,t.cols||[],r));n++})});
-        (s.bullets||[]).forEach(function(b){var e=document.createElement('div');e.className='note';e.innerHTML=md(b);e.dataset.q=plain(b).toLowerCase();inner.appendChild(e);n++});
+        if(cfg.ordered&&s.blocks){
+          /* 읽는 문서: 글 순서 그대로 */
+          s.blocks.forEach(function(b){
+            if(b.k==='tb'){var t=(s.tables||[])[b.i];if(t)(t.rows||[]).forEach(function(r){inner.appendChild(card(ctx,t.cols||[],r));n++});return}
+            var e=document.createElement('div');e.className='note';e.innerHTML=(b.k==='li'?'• ':'')+md(b.x);e.dataset.q=plain(b.x).toLowerCase();inner.appendChild(e);n++;
+          });
+        }else{
+          (s.paras||[]).forEach(function(p){var e=document.createElement('div');e.className='note'+(/^0\./.test(s.h||'')?' warnbox':'');e.innerHTML=md(p);e.dataset.q=plain(p).toLowerCase();inner.appendChild(e);n++});
+          (s.tables||[]).forEach(function(t){(t.rows||[]).forEach(function(r){inner.appendChild(card(ctx,t.cols||[],r));n++})});
+          (s.bullets||[]).forEach(function(b){var e=document.createElement('div');e.className='note';e.innerHTML=md(b);e.dataset.q=plain(b).toLowerCase();inner.appendChild(e);n++});
+        }
         if(!n) return;
         wrap.innerHTML='<summary>'+esc((s.h||'(머리말)').replace(/^#+\s*/,''))+' <span class="muted" style="font-weight:500">'+n+'</span></summary>';
         wrap.appendChild(inner);host.appendChild(wrap);
