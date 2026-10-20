@@ -27,7 +27,7 @@
     h+='<div class="grid g2" style="margin-top:14px">';
     if(cl){
       var n={open:0,part:0,done:0},hi=0;
-      ((cl.body||{}).CATS||[]).forEach(function(c){(c.items||[]).forEach(function(it){n[it.st||'open']++;if(!it.st&&it.lv==='hi')hi++})});
+      ((cl.body||{}).CATS||[]).forEach(function(c){(c.items||[]).forEach(function(it){var k=(it.st==='done'||it.st==='part')?it.st:'open';n[k]++;if(k==='open'&&it.lv==='hi')hi++})});
       h+='<div class="card"><b>점검판</b><p class="muted" style="margin:4px 0 0">미해결 <b style="color:var(--ink)">'+n.open+'</b> (그중 높음 '+hi+') · 부분 완료 '+n.part+' · 완료 '+n.done+'</p><a class="btn cta" href="#/checklist">점검판 열기</a></div>';
     }
     var q=sec(st,/^0\./);

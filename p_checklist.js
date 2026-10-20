@@ -31,7 +31,7 @@
       '<div class="fl" id="fl"></div><div class="cl"><div id="lists"></div><aside class="card det" id="det" aria-live="polite"><span class="muted">항목을 누르면 쉬운 설명이 나와요.</span></aside></div>';
 
     var det=root.querySelector('#det'), lists=root.querySelector('#lists'), sel=null;
-    function show(id){
+    function show(id,scroll){
       var it=byId[id]; if(!it) return; sel=id;
       lists.querySelectorAll('.it').forEach(function(b){b.setAttribute('aria-pressed',b.dataset.id===id?'true':'false')});
       var h='<h3>'+esc(it.t)+'</h3><div><span class="pl '+(it.st||it.lv)+'">'+(it.st?ST[it.st]:LV[it.lv])+'</span> <span class="muted" style="font-size:12px">담당: '+esc(it.who||'')+'</span></div>';
@@ -42,7 +42,7 @@
       h+='<div class="bk"><b>다른 방법</b><ul>'+(it.alt||[]).map(function(a){return '<li>'+md(a)+'</li>'}).join('')+'</ul></div>';
       if(it.tech) h+='<p class="tech">원래 기술 이름: '+esc(it.tech)+'</p>';
       det.innerHTML=h; det.scrollTop=0;
-      if(window.matchMedia('(max-width:900px)').matches) det.scrollIntoView({block:'start',behavior:'smooth'});
+      if(scroll&&window.matchMedia('(max-width:900px)').matches) det.scrollIntoView({block:'start',behavior:'smooth'});
     }
     function draw(){
       lists.innerHTML='';
@@ -53,7 +53,7 @@
         items.forEach(function(it){
           var b=document.createElement('button');b.type='button';b.className='it'+(it.st?' '+it.st:'');b.dataset.id=it.id;b.setAttribute('aria-pressed',sel===it.id?'true':'false');
           b.innerHTML='<span class="pl '+(it.st||it.lv)+'">'+(it.st?ST[it.st]:(LV[it.lv]||''))+'</span><span class="tt">'+esc(it.t)+'</span>';
-          b.onclick=function(){show(it.id)};d.appendChild(b);
+          b.onclick=function(){show(it.id,true)};d.appendChild(b);
         });
         lists.appendChild(d);
       });
@@ -69,7 +69,7 @@
     TOP.forEach(function(x,i){
       var it=byId[x[1]],b=document.createElement('button');b.type='button';b.className='it'+(it&&it.st?' '+it.st:'');
       b.innerHTML='<span class="pl '+(it&&it.st?it.st:'mid')+'">'+(i+1)+'</span><span class="tt">'+esc(x[0])+'</span>';
-      b.onclick=function(){show(x[1])};t5.appendChild(b);
+      b.onclick=function(){show(x[1],true)};t5.appendChild(b);
     });
     draw();
     var first=null;CATS.some(function(c){return c.items.some(function(it){if(!it.st){first=it.id;return true}})});
