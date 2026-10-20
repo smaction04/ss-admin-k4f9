@@ -24,6 +24,7 @@
 
   function card(ctx,cols,row){
     var esc=ctx.esc,md=ctx.md;
+    row=row.map(function(c){return c==null?'':String(c)});
     var title=plain(row[0]).slice(0,120)||'(제목 없음)';
     var stCol=row.length>=3?1:-1;
     var st=stCol>=0?row[stCol]:'';
@@ -44,7 +45,7 @@
     window.PAGES[name]={render:async function(root,ctx,page){
       var cfg=CFG[page],esc=ctx.esc,md=ctx.md;
       var doc=await ctx.getDoc(cfg.key,true);
-      var secs=(doc.body.sections||[]).filter(function(s){return cfg.pick(s.h||'')});
+      var secs=((doc.body||{}).sections||[]).filter(function(s){return cfg.pick(s.h||'')});
       root.innerHTML='<style>.dc{padding:0;margin-bottom:6px}.dc summary{list-style:none;cursor:pointer;display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 14px}.dc summary::-webkit-details-marker{display:none}.dc .dt{font-weight:600;min-width:0;overflow-wrap:anywhere}.db{padding:0 14px 12px;border-top:1px dashed var(--line)}.dr{margin-top:8px}.dr b{display:block;font-size:11.5px;color:var(--ink-soft);margin-bottom:1px}.dr div{overflow-wrap:anywhere}.sec{margin-top:18px}.sec>summary{cursor:pointer;font-weight:800;font-size:15px;padding:6px 0}.note{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin:0 0 6px;overflow-wrap:anywhere}.warnbox{border-color:var(--warn);background:var(--warn-bg)}</style>'+
         '<h1 class="pt">'+esc(cfg.title)+'</h1><p class="sub">'+esc(cfg.sub)+' · 서버 반영 '+esc(ctx.ago(doc.updated_at))+'</p>'+
         '<input class="search" id="q" type="search" placeholder="검색 (예: TNK, 기프티쇼, 광고)" aria-label="검색">';
@@ -61,6 +62,7 @@
         wrap.innerHTML='<summary>'+esc((s.h||'(머리말)').replace(/^#+\s*/,''))+' <span class="muted" style="font-weight:500">'+n+'</span></summary>';
         wrap.appendChild(inner);host.appendChild(wrap);
       });
+      if(!host.children.length) host.innerHTML='<div class="card muted" style="margin-top:14px">표시할 내용이 아직 서버에 없어요 (sync_hub.py 실행 필요)</div>';
       var q=root.querySelector('#q');
       q.addEventListener('input',function(){
         var v=q.value.trim().toLowerCase();

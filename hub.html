@@ -101,11 +101,14 @@ async function listDocs(){const {data,error}=await sb.rpc('admin_hub_list');if(e
 function ago(iso){const m=Math.round((Date.now()-new Date(iso))/60000);if(m<1)return '방금';if(m<60)return m+'분 전';const h=Math.round(m/60);if(h<48)return h+'시간 전';return Math.round(h/24)+'일 전'}
 const ctx={sb,esc,md,getDoc,listDocs,ago,go:(p)=>{location.hash='#/'+p}};
 
+const loading={};
 function loadScript(file){
-  return new Promise((res,rej)=>{
-    if(document.querySelector('script[data-p="'+file+'"]')) return res();
-    const s=document.createElement('script');s.src=file+'?v='+V;s.dataset.p=file;s.onload=res;s.onerror=()=>rej(new Error(file+' 불러오기 실패'));document.head.appendChild(s);
-  });
+  if(loading[file]) return loading[file];
+  return (loading[file]=new Promise((res,rej)=>{
+    const s=document.createElement('script');s.src=file+'?v='+V;s.dataset.p=file;s.onload=res;
+    s.onerror=()=>{s.remove();delete loading[file];rej(new Error(file+' 불러오기 실패'))};
+    document.head.appendChild(s);
+  }));
 }
 function drawNav(cur){
   const nav=document.getElementById('nav');

@@ -4,9 +4,9 @@
   var STH={done:'완료 — 확인까지 끝남',part:'부분 완료 — 아직 못 끝낸 이유'};
   window.PAGES.checklist={render:async function(root,ctx){
     var esc=ctx.esc,md=ctx.md;
-    var doc=await ctx.getDoc('checklist',true), CATS=doc.body.CATS||[], TOP=doc.body.TOP||[];
+    var doc=await ctx.getDoc('checklist',true), CATS=(doc.body||{}).CATS||[], TOP=(doc.body||{}).TOP||[];
     var byId={}, n={open:0,part:0,done:0}, lv={hi:0,mid:0,lo:0};
-    CATS.forEach(function(c){c.items.forEach(function(it){byId[it.id]=it;n[it.st||'open']++;if(!it.st)lv[it.lv]++})});
+    CATS.forEach(function(c){c.items=c.items||[];c.items.forEach(function(it){byId[it.id]=it;var k=(it.st==='done'||it.st==='part')?it.st:'open';n[k]++;if(k==='open'&&lv[it.lv]!=null)lv[it.lv]++})});
     var filter='open';
     root.innerHTML='<style>'+
       '.cl{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,.9fr);gap:14px;align-items:start}'+
@@ -42,6 +42,7 @@
       h+='<div class="bk"><b>다른 방법</b><ul>'+(it.alt||[]).map(function(a){return '<li>'+md(a)+'</li>'}).join('')+'</ul></div>';
       if(it.tech) h+='<p class="tech">원래 기술 이름: '+esc(it.tech)+'</p>';
       det.innerHTML=h; det.scrollTop=0;
+      if(window.matchMedia('(max-width:900px)').matches) det.scrollIntoView({block:'start',behavior:'smooth'});
     }
     function draw(){
       lists.innerHTML='';
@@ -51,7 +52,7 @@
         var d=document.createElement('div');d.className='cat';d.innerHTML='<h2>'+esc(c.name)+' · '+items.length+'건</h2>';
         items.forEach(function(it){
           var b=document.createElement('button');b.type='button';b.className='it'+(it.st?' '+it.st:'');b.dataset.id=it.id;b.setAttribute('aria-pressed',sel===it.id?'true':'false');
-          b.innerHTML='<span class="pl '+(it.st||it.lv)+'">'+(it.st?ST[it.st]:LV[it.lv])+'</span><span class="tt">'+esc(it.t)+'</span>';
+          b.innerHTML='<span class="pl '+(it.st||it.lv)+'">'+(it.st?ST[it.st]:(LV[it.lv]||''))+'</span><span class="tt">'+esc(it.t)+'</span>';
           b.onclick=function(){show(it.id)};d.appendChild(b);
         });
         lists.appendChild(d);

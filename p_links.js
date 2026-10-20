@@ -8,6 +8,7 @@
     groups.forEach(function(g){
       h+='<div class="sec-h">'+esc(g.name)+'</div><div class="grid g2">';
       g.items.forEach(function(it){
+        if(!/^https?:\/\//.test(it.url||'')) return;
         h+='<a class="card lk" href="'+esc(it.url)+'" target="_blank" rel="noopener"><b>'+esc(it.name)+'</b><span>'+md(it.note||'')+'</span></a>';
       });
       h+='</div>';

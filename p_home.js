@@ -12,7 +12,7 @@
     h+='<p class="sub">'+(one?md(one):'현황 문서가 아직 서버에 없어요 (sync_hub.py 실행 필요)')+'</p>';
 
     /* 실시간 숫자 */
-    var s=live&&live.data&&live.data[0];
+    var s=live&&live.data&&(Array.isArray(live.data)?live.data[0]:live.data);
     h+='<div class="sec-h" style="margin-top:6px">지금 숫자 (실시간, 관제실과 같은 값)</div>';
     if(s){
       h+='<div class="grid g4">'+
@@ -27,7 +27,7 @@
     h+='<div class="grid g2" style="margin-top:14px">';
     if(cl){
       var n={open:0,part:0,done:0},hi=0;
-      cl.body.CATS.forEach(function(c){c.items.forEach(function(it){n[it.st||'open']++;if(!it.st&&it.lv==='hi')hi++})});
+      ((cl.body||{}).CATS||[]).forEach(function(c){(c.items||[]).forEach(function(it){n[it.st||'open']++;if(!it.st&&it.lv==='hi')hi++})});
       h+='<div class="card"><b>점검판</b><p class="muted" style="margin:4px 0 0">미해결 <b style="color:var(--ink)">'+n.open+'</b> (그중 높음 '+hi+') · 부분 완료 '+n.part+' · 완료 '+n.done+'</p><a class="btn cta" href="#/checklist">점검판 열기</a></div>';
     }
     var q=sec(st,/^0\./);
