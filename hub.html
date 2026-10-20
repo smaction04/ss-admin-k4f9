@@ -25,17 +25,21 @@ code{font-family:ui-monospace,Consolas,monospace;font-size:.92em;background:var(
 .top{display:flex;align-items:center;gap:12px;padding:10px max(16px,env(safe-area-inset-left));border-bottom:1px solid var(--line);background:var(--surface)}
 .brand{font-weight:800;letter-spacing:-.01em;white-space:nowrap}
 .brand small{color:var(--ink-soft);font-weight:600;margin-left:6px}
-.nav{display:flex;gap:4px;overflow-x:auto;flex:1;scrollbar-width:none}
-.nav::-webkit-scrollbar{display:none}
-.nav a{padding:6px 12px;border-radius:8px;color:var(--ink-soft);text-decoration:none;white-space:nowrap;font-weight:600;font-size:13.5px}
+.spacer{flex:1}
+.shell{flex:1;min-height:0;display:flex}
+.nav{width:190px;flex:none;display:flex;flex-direction:column;gap:2px;padding:12px 10px;border-right:1px solid var(--line);background:var(--surface);overflow-y:auto}
+.nav .grp{font-size:11px;letter-spacing:.06em;color:var(--ink-faint);font-weight:700;margin:12px 10px 4px}
+.nav .grp:first-child{margin-top:2px}
+.nav a{display:flex;gap:8px;align-items:center;padding:8px 10px;border-radius:8px;color:var(--ink-soft);text-decoration:none;white-space:nowrap;font-weight:600;font-size:13.5px}
 .nav a:hover{background:var(--surface-2)}
 .nav a[aria-current="page"]{background:var(--accent);color:var(--accent-ink)}
+.nav a i{font-style:normal;width:1.3em;text-align:center}
 .who{color:var(--ink-faint);font-size:12px;white-space:nowrap}
 .btn{border:1px solid var(--line);border-radius:8px;padding:5px 10px;font-size:12.5px;color:var(--ink-soft);background:var(--surface)}
 .btn:hover{background:var(--surface-2)}
 .btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
 
-#view{flex:1;min-height:0;overflow:auto}
+#view{flex:1;min-width:0;min-height:0;overflow:auto}
 .wrap{max-width:1200px;margin:0 auto;padding:16px max(16px,env(safe-area-inset-left)) 40px}
 .frame{border:0;width:100%;height:100%;display:block}
 .center{display:flex;align-items:center;justify-content:center;height:100%;padding:24px;text-align:center;color:var(--ink-soft)}
@@ -53,17 +57,26 @@ h1.pt{font-size:20px;margin:4px 0 2px;letter-spacing:-.01em}
 .sec-h{font-size:12px;letter-spacing:.05em;color:var(--ink-soft);font-weight:700;margin:20px 0 8px}
 .muted{color:var(--ink-soft)}
 .search{width:100%;max-width:420px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:7px 10px;font:inherit}
+@media (max-width:760px){
+  .shell{flex-direction:column}
+  .nav{width:auto;flex-direction:row;border-right:0;border-bottom:1px solid var(--line);padding:6px 10px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
+  .nav::-webkit-scrollbar{display:none}
+  .nav .grp{display:none}
+}
 @media (max-width:640px){.who{display:none}.brand small{display:none}}
 </style>
 </head>
 <body>
 <header class="top">
   <div class="brand">🌘 SleepSave<small>관리센터</small></div>
-  <nav class="nav" id="nav" aria-label="메뉴"></nav>
+  <span class="spacer"></span>
   <span class="who" id="who"></span>
   <button class="btn" id="signOut" hidden>로그아웃</button>
 </header>
-<main id="view"><div class="center">불러오는 중...</div></main>
+<div class="shell">
+  <nav class="nav" id="nav" aria-label="메뉴"></nav>
+  <main id="view"><div class="center">불러오는 중...</div></main>
+</div>
 
 <script>
 /* 관리센터 뼈대. 메뉴마다 따로 파일(p_*.js)이고, 눌렀을 때만 불러온다.
@@ -73,8 +86,8 @@ const SUPABASE_ANON_KEY = "sb_publishable_jHw2UufXRWscdg4ZitfMGw_DHEagC8n"; // �
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const V = Date.now();
 const MENU = [
-  ['home','홈'],['ops','관제실'],['checklist','점검판'],['status','현황'],
-  ['preflight','출시 점검'],['vendors','업체'],['todo','결정·대기'],['links','바로가기']
+  ['home','홈','🏠','자주 쓰는 것'],['ops','관제실','📊'],['checklist','점검판','✅'],['status','현황','📋'],['todo','결정·대기','⏳'],
+  ['preflight','출시 점검','🚀','참고'],['vendors','업체','🤝'],['links','바로가기','🔗']
 ];
 const FILES = {home:'p_home.js',checklist:'p_checklist.js',status:'p_docs.js',preflight:'p_docs.js',vendors:'p_docs.js',todo:'p_docs.js',links:'p_links.js'};
 window.PAGES = {};
@@ -112,7 +125,7 @@ function loadScript(file){
 }
 function drawNav(cur){
   const nav=document.getElementById('nav');
-  nav.innerHTML=MENU.map(m=>'<a href="#/'+m[0]+'"'+(m[0]===cur?' aria-current="page"':'')+'>'+m[1]+'</a>').join('');
+  nav.innerHTML=MENU.map(m=>(m[3]?'<div class="grp">'+m[3]+'</div>':'')+'<a href="#/'+m[0]+'"'+(m[0]===cur?' aria-current="page"':'')+'><i>'+m[2]+'</i>'+m[1]+'</a>').join('');
 }
 let token=0;
 async function route(){
