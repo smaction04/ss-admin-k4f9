@@ -618,7 +618,8 @@ async function renderDashboard(){
   if (!aal || aal.currentLevel !== 'aal2') { await showMfa(); return; }
   $('mfaView').hidden = true;
   // 로그인(폰 인증 포함)이 끝나면 관리센터로 보낸다. 관리센터 안의 관제실(embed)은 그대로 이 화면을 쓴다.
-  if (!isEmbed) { location.replace('./'); return; }
+  // 관리센터가 같이 배포된 주소(github.io)에서만 이동한다. 로컬(127.0.0.1)에는 관리센터가 없어 이 화면을 그대로 쓴다.
+  if (!isEmbed && location.hostname.endsWith('github.io')) { location.replace('./'); return; }
   renderTopbarSignedIn(session.user.email);
   await loadStats();
 }
