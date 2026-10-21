@@ -273,7 +273,7 @@
 
     <details class="note" style="margin-top:1rem">
       <summary>비밀번호 정하기·바꾸기</summary>
-      <div class="field" style="margin-top:0.6rem"><label for="newPw">새 비밀번호 (10자 이상)</label><input id="newPw" type="password" autocomplete="new-password"></div>
+      <div class="field" style="margin-top:0.6rem"><label for="newPw">새 비밀번호 (12자 이상)</label><input id="newPw" type="password" autocomplete="new-password"></div>
       <button class="btn ghost" id="newPwBtn">저장</button>
       <div class="login-msg" id="pwMsg"></div>
     </details>
@@ -329,7 +329,7 @@ async function pwLogin(){
 // 폰 인증까지 끝난 상태에서만 호출됨. 비밀번호는 이 화면에서 정하고 서버(Supabase)에만 저장된다.
 async function savePassword(){
   const pw = $('newPw').value;
-  if (pw.length < 10) return setPwMsg('비밀번호는 10자 이상으로 해주세요.', 'err');
+  if (pw.length < 12) return setPwMsg('비밀번호는 12자 이상으로 해주세요.', 'err');
   $('newPwBtn').disabled = true;
   const { error } = await sb.auth.updateUser({ password: pw });
   $('newPwBtn').disabled = false;
