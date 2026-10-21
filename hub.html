@@ -153,7 +153,7 @@ async function route(){
 }
 async function start(){
   const {data:{session}}=await sb.auth.getSession();
-  if(!session){return gate('로그인이 필요해요. 로그인은 관제실 화면에서 합니다(메일 링크 → 폰 인증앱 6자리).')}
+  if(!session){return gate('로그인이 필요해요. 로그인은 아래 버튼의 화면에서 합니다(비밀번호 → 폰 인증앱 6자리). 끝나면 이 관리센터로 자동으로 돌아와요.')}
   const {data:isAdmin}=await sb.rpc('is_admin');
   if(isAdmin!==true){return gate('관리자 계정이 아니에요. 관리자 이메일로 다시 로그인해 주세요.')}
   const {data:aal}=await sb.auth.mfa.getAuthenticatorAssuranceLevel();
@@ -164,7 +164,7 @@ async function start(){
 }
 function gate(msg){
   drawNav('');
-  view.innerHTML='<div class="center"><div class="card" style="max-width:460px"><b>🔒 슬립세이브 관리센터</b><p class="muted">'+esc(msg)+'</p><a class="btn primary" style="text-decoration:none;display:inline-block" href="app.html">관제실에서 로그인</a></div></div>';
+  view.innerHTML='<div class="center"><div class="card" style="max-width:460px"><b>🔒 슬립세이브 관리센터</b><p class="muted">'+esc(msg)+'</p><a class="btn primary" style="text-decoration:none;display:inline-block" href="app.html">로그인하러 가기</a></div></div>';
 }
 start();
 </script>

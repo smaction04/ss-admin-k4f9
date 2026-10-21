@@ -190,13 +190,18 @@
     <div class="login-card">
       <div>
         <div class="login-title">관리자 전용 로그인</div>
-        <div class="login-desc">슬립세이브 앱 계정과는 별개인 관리자 전용 계정만 들어올 수 있어요. 아래 관리자 메일로 로그인 링크를 보내드리며, 메일의 'Sign in' 버튼을 누르면 이 화면으로 돌아와 바로 로그인돼요.</div>
+        <div class="login-desc">슬립세이브 앱 계정과는 별개인 관리자 전용 계정만 들어올 수 있어요. 비밀번호를 넣으면 다음 화면에서 폰 인증앱 숫자 6자리만 입력하면 돼요.</div>
       </div>
       <div class="field">
         <label for="emailInput">관리자 이메일 (고정)</label>
         <input id="emailInput" type="email" value="sleepsave2026@gmail.com" readonly>
       </div>
-      <button class="btn primary" id="sendCodeBtn">로그인 링크 받기</button>
+      <div class="field">
+        <label for="pwInput">비밀번호</label>
+        <input id="pwInput" type="password" autocomplete="current-password">
+      </div>
+      <button class="btn primary" id="pwLoginBtn">로그인</button>
+      <button class="btn ghost" id="sendCodeBtn">처음이거나 비밀번호를 모르면: 메일로 로그인 링크 받기</button>
       <div class="login-msg" id="loginMsg"></div>
     </div>
   </div>
@@ -266,6 +271,12 @@
     <div class="section-label">누적</div>
     <div class="tiles" id="totalTiles"></div>
 
+    <details class="note" style="margin-top:1rem">
+      <summary>비밀번호 정하기·바꾸기</summary>
+      <div class="field" style="margin-top:0.6rem"><label for="newPw">새 비밀번호 (10자 이상)</label><input id="newPw" type="password" autocomplete="new-password"></div>
+      <button class="btn ghost" id="newPwBtn">저장</button>
+      <div class="login-msg" id="pwMsg"></div>
+    </details>
     <div class="footline">
       <span id="updatedAt">—</span>
       <span>전자금융거래법 기준: 발행잔액 30억 · 연 500억 미만이면 등록 없이 운영 가능</span>
@@ -302,7 +313,37 @@ async function sendCode(){
   setLoginMsg('메일을 보냈어요. 메일의 \'Sign in\' 버튼을 누르면 이 화면으로 돌아와 로그인돼요.', 'ok');
 }
 
-if (new URLSearchParams(location.search).get('embed') === '1') document.documentElement.classList.add('embed');
+async function pwLogin(){
+  const email = $('emailInput').value.trim(), password = $('pwInput').value;
+  if (!password) return setLoginMsg('비밀번호를 입력해주세요.', 'err');
+  $('pwLoginBtn').disabled = true;
+  setLoginMsg('확인 중...');
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+  $('pwLoginBtn').disabled = false;
+  $('pwInput').value = '';
+  if (error) return setLoginMsg('로그인 실패: 이메일 또는 비밀번호가 맞지 않아요. (처음이면 아래 메일 로그인으로 들어와 비밀번호를 먼저 정해주세요)', 'err');
+  setLoginMsg('');
+  await renderDashboard();
+}
+
+// 폰 인증까지 끝난 상태에서만 호출됨. 비밀번호는 이 화면에서 정하고 서버(Supabase)에만 저장된다.
+async function savePassword(){
+  const pw = $('newPw').value;
+  if (pw.length < 10) return setPwMsg('비밀번호는 10자 이상으로 해주세요.', 'err');
+  $('newPwBtn').disabled = true;
+  const { error } = await sb.auth.updateUser({ password: pw });
+  $('newPwBtn').disabled = false;
+  $('newPw').value = '';
+  if (error) return setPwMsg('저장 실패: ' + error.message, 'err');
+  setPwMsg('저장했어요. 다음부터는 비밀번호 + 폰 인증으로 들어올 수 있어요.', 'ok');
+}
+function setPwMsg(text, kind){
+  $('pwMsg').textContent = text || '';
+  $('pwMsg').className = 'login-msg' + (kind ? ' ' + kind : '');
+}
+
+const isEmbed = new URLSearchParams(location.search).get('embed') === '1';
+if (isEmbed) document.documentElement.classList.add('embed');
 
 function renderTopbarSignedIn(email){
   $('topbarRight').innerHTML = `
@@ -576,6 +617,8 @@ async function renderDashboard(){
   const { data: aal } = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
   if (!aal || aal.currentLevel !== 'aal2') { await showMfa(); return; }
   $('mfaView').hidden = true;
+  // 로그인(폰 인증 포함)이 끝나면 관리센터로 보낸다. 관리센터 안의 관제실(embed)은 그대로 이 화면을 쓴다.
+  if (!isEmbed) { location.replace('./'); return; }
   renderTopbarSignedIn(session.user.email);
   await loadStats();
 }
@@ -639,6 +682,9 @@ $('tabRecords').onclick = () => showTab('records');
 $('tabUsers').onclick = () => showTab('users');
 $('tabSuspects').onclick = () => showTab('suspects');
 $('sendCodeBtn').onclick = sendCode;
+$('pwLoginBtn').onclick = pwLogin;
+$('pwInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') pwLogin(); });
+$('newPwBtn').onclick = savePassword;
 
 renderDashboard();
 </script>
