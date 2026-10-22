@@ -40,7 +40,7 @@
 
     /* 문서 반영 시각 */
     if(docs.length){
-      var names={status:'현황·업체',preflight:'출시 점검',todo:'결정·대기',checklist:'점검판',links:'바로가기'};
+      var names={status:'현황',vendors:'업체',preflight:'출시 점검',todo:'결정·대기',checklist:'점검판',links:'바로가기'};
       h+='<div class="sec-h">문서가 서버에 반영된 시각</div><div class="muted" style="font-size:12.5px">'+docs.filter(function(d){return names[d.key]}).map(function(d){return esc(names[d.key])+' '+esc(ctx.ago(d.updated_at))}).join(' · ')+'</div>'+
         '<div class="muted" style="font-size:12px;margin-top:4px">문서는 Claude가 <code>sync_hub.py</code>로 올릴 때 갱신돼요. 이 화면이 오래돼 보이면 "현황 갱신해줘"라고 말씀하세요.</div>';
     }
