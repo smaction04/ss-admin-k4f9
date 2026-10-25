@@ -15,6 +15,7 @@
     guide_plan:{key:'guide_plan',title:'단독 실행 기획서',sub:'솔로실행기획서_fable.md — 전체 로드맵과 기획',ordered:true,pick:function(){return true}},
     guide_screen:{key:'guide_screen',title:'화면 설계',sub:'Phase1_화면가이드.md · Phase1_화면구성안.md',ordered:true,pick:function(){return true}},
     guide_gifti:{key:'guide_gifti',title:'기프티쇼 API',sub:'기프티쇼_API요점.md · 기프티쇼비즈_API_메모.md',ordered:true,pick:function(){return true}},
+    guide_feedback:{key:'guide_feedback',title:'테스터 피드백',sub:'테스터피드백_수정기록.md — 받은 의견·고친 내용·신청서 초안',ordered:true,pick:function(){return true}},
     guide_design:{key:'guide_design',title:'디자인 개편안',sub:'디자인개편_제안서.md — 색·측정기·첫 진입 결정 3가지',ordered:true,pick:function(){return true}}
   };
   /* 상태 어휘(classify.py 와 같음) */

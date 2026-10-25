@@ -87,11 +87,11 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const V = Date.now();
 const MENU = [
   ['ops','관제실','📊','운영'],
-  ['home','요약','🏠','사업 콘텐츠'],['checklist','점검판','✅'],['status','현황','📋'],['todo','결정·대기','⏳'],['preflight','출시 점검','🚀'],['vendors','업체','🤝'],
+  ['home','요약','🏠','사업 콘텐츠'],['checklist','점검판','✅'],['status','현황','📋'],['todo','결정·대기','⏳'],['preflight','출시 점검','🚀'],['guide_feedback','테스터 피드백','💬'],['vendors','업체','🤝'],
   ['guide_intro','서비스 소개서','📄','사업 가이드'],['guide_plan','단독 실행 기획서','🗺️'],['guide_screen','화면 설계','🎨'],['guide_gifti','기프티쇼 API','🎁'],['guide_design','디자인 개편안','🖌️'],['design','디자인 시안','📱'],
   ['links','바로가기','🔗','도구']
 ];
-const FILES = {home:'p_home.js',checklist:'p_checklist.js',status:'p_docs.js',preflight:'p_docs.js',vendors:'p_vendors.js',todo:'p_docs.js',guide_intro:'p_docs.js',guide_plan:'p_docs.js',guide_screen:'p_docs.js',guide_gifti:'p_docs.js',guide_design:'p_docs.js',design:'p_html.js',links:'p_links.js'};
+const FILES = {home:'p_home.js',checklist:'p_checklist.js',status:'p_docs.js',preflight:'p_docs.js',vendors:'p_vendors.js',todo:'p_docs.js',guide_intro:'p_docs.js',guide_plan:'p_docs.js',guide_screen:'p_docs.js',guide_gifti:'p_docs.js',guide_design:'p_docs.js',guide_feedback:'p_docs.js',design:'p_html.js',links:'p_links.js'};
 window.PAGES = {};
 const view = document.getElementById('view');
 const docCache = {};
