@@ -72,7 +72,7 @@
       /* 발행 캐시 내역 */
       var iss=Object.keys(TYPES).filter(function(k){return issuedBy[k]!=null}).map(function(k){return row(TYPES[k],won(issuedBy[k]))}).join('');
       var issCard='<div class="sec-h">약속한 캐시 내역 (유저에게 쌓아 준 것)</div><div class="card"><table class="pt">'+(iss||'<tr><td class="muted">이번 달 지급 기록 없음</td></tr>')+
-        row('부스터 구매로 되돌아온 캐시',won(d.booster_spent),'유저가 캐시를 써서 사 간 부스터 — 약속한 캐시가 줄어드는 쪽')+'</table></div>';
+        row('부스터에 쓰인 캐시',won(d.booster_spent),'부스터 이용으로 유저 캐시에서 차감된 금액 — 약속한 캐시가 줄어드는 쪽')+'</table></div>';
 
       /* 사업 체력 지표 */
       function kpi(label,val,note,need,good){
