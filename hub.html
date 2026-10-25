@@ -97,7 +97,7 @@ const V = Date.now();
 /* 메뉴 8개 = 관리자가 묻는 질문 순서. [주소, 이름, 아이콘, 묶음 머리글]
    여러 문서를 한 메뉴에 묶은 곳은 TABS 로 탭을 단다. 옛 주소(#/checklist 등)도 그 탭으로 그대로 열린다. */
 const MENU = [
-  ['ops','관제실','📊','운영'],['pnl','손익','💹'],['coupon','쿠폰 대상자','🎁'],
+  ['ops','관제실','📊','운영'],['pnl','손익','💹'],['coupon','쿠폰 대상자','🎁'],['feedback','받은 의견','🐰'],
   ['home','오늘 할 일','🏠','할 일'],['launch','출시 준비','🚀'],['guide_feedback','테스트·의견','💬'],['vendors','업체·돈','🤝'],
   ['records','진행 기록','📋','기록'],
   ['library','참고 문서','📚','자료'],['links','바로가기','🔗']
@@ -112,6 +112,7 @@ const WHEN = {
   ops:'매일 한 번 — 오늘 가입·지급·잔액 숫자와 경보를 보는 곳',
   pnl:'월말·결산 때, 또는 돈 얘기가 나올 때 — 얼마 벌고 얼마 나갔는지(30초마다 자동 갱신)',
   coupon:'테스트 14일 개근자 확인할 때 — 성함·전화번호 보고 스벅쿠폰 보낸 뒤 "발송 완료"를 눌러요',
+  feedback:'테스터가 앱 토끼 버튼으로 보낸 글을 읽을 때 — 최신순(30초마다 자동 갱신)',
   home:'열자마자 보는 곳 — 지금 내가 할 일, Claude가 할 일, 출시를 막는 것만 모았어요',
   launch:'출시 버튼 누르기 전에 — 빠진 게 없는지 하나씩 확인하는 곳',
   guide_feedback:'테스터 의견이 들어왔을 때 — 받은 의견과 고친 내용을 적어 두는 곳(프로덕션 신청서 재료)',
@@ -120,7 +121,7 @@ const WHEN = {
   library:'설명·기획을 다시 읽을 때 — 원본 문서·시안 그대로',
   links:'바깥 사이트(플레이 콘솔·애드몹·서버 등)로 바로 갈 때'
 };
-const FILES = {pnl:'p_pnl.js',coupon:'p_coupon.js',home:'p_home.js',checklist:'p_checklist.js',status:'p_docs.js',preflight:'p_docs.js',vendors:'p_vendors.js',todo:'p_docs.js',guide_intro:'p_docs.js',guide_plan:'p_docs.js',guide_screen:'p_docs.js',guide_gifti:'p_docs.js',guide_design:'p_docs.js',guide_feedback:'p_docs.js',design:'p_html.js',links:'p_links.js'};
+const FILES = {pnl:'p_pnl.js',coupon:'p_coupon.js',feedback:'p_feedback.js',home:'p_home.js',checklist:'p_checklist.js',status:'p_docs.js',preflight:'p_docs.js',vendors:'p_vendors.js',todo:'p_docs.js',guide_intro:'p_docs.js',guide_plan:'p_docs.js',guide_screen:'p_docs.js',guide_gifti:'p_docs.js',guide_design:'p_docs.js',guide_feedback:'p_docs.js',design:'p_html.js',links:'p_links.js'};
 window.PAGES = {};
 const view = document.getElementById('view');
 const docCache = {};
