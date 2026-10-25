@@ -21,7 +21,7 @@
       '.sim{background:var(--surface-2);border-radius:8px;padding:8px 10px}.sim p{font-weight:600}.stbox{border-radius:8px;padding:8px 10px}.stbox.done{background:var(--good-bg)}.stbox.part{background:var(--warn-bg)}'+
       '.tech{margin-top:12px;border-top:1px dashed var(--line);padding-top:8px;font-size:12px;color:var(--ink-soft)}'+
       '</style>'+
-      '<h1 class="pt">점검판</h1><p class="sub">Fable 종합 평가(코드·문서를 읽은 평가, 앱을 직접 돌려 본 건 아님) · 서버 반영 '+esc(ctx.ago(doc.updated_at))+'</p>'+
+      '<h1 class="pt">앱 품질 점검판</h1><p class="sub">Fable 종합 평가(코드·문서를 읽은 평가, 앱을 직접 돌려 본 건 아님) · 서버 반영 '+esc(ctx.ago(doc.updated_at))+'</p>'+
       '<div class="grid g4" style="margin-bottom:12px">'+
         '<div class="tile"><b>미해결</b><span>'+n.open+'</span></div>'+
         '<div class="tile"><b>부분 완료</b><span>'+n.part+'</span></div>'+

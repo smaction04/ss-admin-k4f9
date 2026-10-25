@@ -5,18 +5,18 @@
    읽는 문서(guide_*, ordered)는 글 순서 그대로 보여 준다. */
 (function(){
   var CFG={
-    status:{key:'status',title:'현황',sub:'STATUS.md — 새 세션이 제일 먼저 읽는 "현재 상태 한 장" (업체 표는 업체 메뉴로)',
+    status:{key:'status',title:'현재 상태 한 장',sub:'원본 STATUS.md 그대로 — 지금까지 한 일·검증·일지 (업체 표는 업체·돈 메뉴에)',
       pick:function(h){return !/^4\./.test(h)}},
-    preflight:{key:'preflight',title:'출시 점검',sub:'PREFLIGHT.md — "지금 출시를 막는 것"이 맨 위, 사전 점검 기록은 남은 것부터',
+    preflight:{key:'preflight',title:'출시 점검표',sub:'원본 PREFLIGHT.md — "지금 출시를 막는 것"이 맨 위, 점검 기록은 남은 것부터',
       pick:function(){return true}},
-    todo:{key:'todo',title:'결정·대기',sub:'보류_할일.md — 할 일(사용자 결정·Claude 작업) → 진행 중 → 대기 → 접힘(보류·완료·기록)',
+    todo:{key:'todo',title:'보류·할 일 장부',sub:'원본 보류_할일.md — 할 일(내 결정·Claude 작업) → 진행 중 → 대기 → 접힘(보류·완료·기록)',
       pick:function(){return true}},
     guide_intro:{key:'guide_intro',title:'서비스 소개서',sub:'서비스소개서.md',ordered:true,pick:function(){return true}},
     guide_plan:{key:'guide_plan',title:'단독 실행 기획서',sub:'솔로실행기획서_fable.md — 전체 로드맵과 기획',ordered:true,pick:function(){return true}},
     guide_screen:{key:'guide_screen',title:'화면 설계',sub:'Phase1_화면가이드.md · Phase1_화면구성안.md',ordered:true,pick:function(){return true}},
     guide_gifti:{key:'guide_gifti',title:'기프티쇼 API',sub:'기프티쇼_API요점.md · 기프티쇼비즈_API_메모.md',ordered:true,pick:function(){return true}},
-    guide_feedback:{key:'guide_feedback',title:'테스터 피드백',sub:'테스터피드백_수정기록.md — 받은 의견·고친 내용·신청서 초안',ordered:true,pick:function(){return true}},
-    guide_design:{key:'guide_design',title:'디자인 개편안',sub:'디자인개편_제안서.md — 색·측정기·첫 진입 결정 3가지',ordered:true,pick:function(){return true}}
+    guide_feedback:{key:'guide_feedback',title:'테스트·의견',sub:'원본 테스터피드백_수정기록.md — 받은 의견·고친 내용·신청서 초안',ordered:true,pick:function(){return true}},
+    guide_design:{key:'guide_design',title:'디자인 개편 제안서',sub:'디자인개편_제안서.md — 색·측정기·첫 진입 결정 3가지',ordered:true,pick:function(){return true}}
   };
   /* 상태 어휘(classify.py 와 같음) */
   var ORDER=['act','keep','wait','bad','hold','done','ref'];
@@ -129,7 +129,7 @@
         }
         if(!n) return;
         var openCnt=tagged.filter(function(x){return !FOLD[x.m.s]}).length;
-        var hint=s.kind==='ref'?'참고':s.kind==='checklist'?'출시 직전 최종 점검표 — 아직 비움':s.kind==='log'?'시간순 일지(최신이 위) — 남은 일은 결정·대기 메뉴에서 관리':'';
+        var hint=s.kind==='ref'?'참고':s.kind==='checklist'?'출시 직전 최종 점검표 — 아직 비움':s.kind==='log'?'시간순 일지(최신이 위) — 남은 일은 오늘 할 일·보류·할 일 장부에서':'';
         var tiny=!(s.tables||[]).length&&!(s.bullets||[]).length&&(s.paras||[]).length<=3;   // 한 줄·머리말 같은 짧은 절은 펼침
         wrap.open=cfg.ordered?idx<4:(s.kind==='alert'||(s.kind!=='ref'&&s.kind!=='checklist'&&s.kind!=='log'&&(tagged.length?openCnt>0:(idx<2||tiny))));
         wrap.innerHTML='<summary>'+esc((s.h||'(머리말)').replace(/^#+\s*/,''))+' <span class="muted" style="font-weight:500">'+(tagged.length?openCnt+'/'+n:n)+(hint?' · '+esc(hint):'')+'</span></summary>';

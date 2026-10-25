@@ -23,7 +23,7 @@
       '.fl{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px}.fl button{border:1px solid var(--line);border-radius:99px;padding:3px 12px;font-size:12.5px;font-weight:600;background:var(--surface);color:var(--ink-soft)}.fl button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}'+
       '.empty{color:var(--ink-soft);font-size:13px;padding:6px 0}'+
       '</style>'+
-      '<h1 class="pt">업체</h1><p class="sub">광고·기프티콘 업체 관계 — 원문은 STATUS.md 4절(펼치면 전문) · 분류 기준은 관리센터/분류기준.md · 서버 반영 '+esc(ctx.ago(doc.updated_at))+'</p>'+
+      '<h1 class="pt">업체·돈</h1><p class="sub">광고(돈이 들어오는 곳)·기프티콘(돈이 나가는 곳) 업체별 상태 — 카드를 펼치면 원문 전체(STATUS.md 4절) · 서버 반영 '+esc(ctx.ago(doc.updated_at))+'</p>'+
       '<div class="fl" id="fl"></div>'+
       '<input class="search" id="q" type="search" placeholder="검색 (예: TNK, 기프티쇼, 정산)" aria-label="검색">';
     var host=document.createElement('div');root.appendChild(host);

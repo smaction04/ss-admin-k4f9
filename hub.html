@@ -57,6 +57,15 @@ h1.pt{font-size:20px;margin:4px 0 2px;letter-spacing:-.01em}
 .sec-h{font-size:12px;letter-spacing:.05em;color:var(--ink-soft);font-weight:700;margin:20px 0 8px}
 .muted{color:var(--ink-soft)}
 .search{width:100%;max-width:420px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:7px 10px;font:inherit}
+.when{margin:0 0 10px;padding:7px 12px;border-left:3px solid var(--accent);background:var(--surface-2);border-radius:6px;font-size:12.5px;color:var(--ink-soft)}
+.ops{display:flex;flex-direction:column;height:100%}
+.ops-when{margin:8px max(16px,env(safe-area-inset-left)) 0;flex:none}
+.ops .frame{flex:1;min-height:0;height:auto}
+.tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--line);margin:0 0 12px}
+.tabs::-webkit-scrollbar{display:none}
+.tabs a{flex:none;padding:7px 12px;font-size:13px;font-weight:700;color:var(--ink-soft);text-decoration:none;border-bottom:2px solid transparent;white-space:nowrap}
+.tabs a[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.tabbed h1.pt{font-size:16px}
 @media (max-width:760px){
   .shell{flex-direction:column}
   .nav{width:auto;flex-direction:row;border-right:0;border-bottom:1px solid var(--line);padding:6px 10px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
@@ -85,12 +94,30 @@ const SUPABASE_URL = "https://mdcjpgbhpwjheaprogxr.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_jHw2UufXRWscdg4ZitfMGw_DHEagC8n"; // 공개용 anon key, 서버 함수가 관리자+2단계를 다시 확인한다
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const V = Date.now();
+/* 메뉴 8개 = 관리자가 묻는 질문 순서. [주소, 이름, 아이콘, 묶음 머리글]
+   여러 문서를 한 메뉴에 묶은 곳은 TABS 로 탭을 단다. 옛 주소(#/checklist 등)도 그 탭으로 그대로 열린다. */
 const MENU = [
   ['ops','관제실','📊','운영'],
-  ['home','요약','🏠','사업 콘텐츠'],['checklist','점검판','✅'],['status','현황','📋'],['todo','결정·대기','⏳'],['preflight','출시 점검','🚀'],['guide_feedback','테스터 피드백','💬'],['vendors','업체','🤝'],
-  ['guide_intro','서비스 소개서','📄','사업 가이드'],['guide_plan','단독 실행 기획서','🗺️'],['guide_screen','화면 설계','🎨'],['guide_gifti','기프티쇼 API','🎁'],['guide_design','디자인 개편안','🖌️'],['design','디자인 시안','📱'],
-  ['links','바로가기','🔗','도구']
+  ['home','오늘 할 일','🏠','할 일'],['launch','출시 준비','🚀'],['guide_feedback','테스트·의견','💬'],['vendors','업체·돈','🤝'],
+  ['records','진행 기록','📋','기록'],
+  ['library','참고 문서','📚','자료'],['links','바로가기','🔗']
 ];
+const TABS = {
+  launch:[['preflight','출시 점검표'],['checklist','앱 품질 점검판']],
+  records:[['status','현재 상태 한 장'],['todo','보류·할 일 장부']],
+  library:[['guide_intro','서비스 소개서'],['guide_plan','단독 실행 기획서'],['guide_screen','화면 설계'],['guide_gifti','기프티쇼 API'],['guide_design','디자인 개편 제안서'],['design','디자인 시안']]
+};
+/* 화면 맨 위 한 줄: 언제 보는 곳인지 */
+const WHEN = {
+  ops:'매일 한 번 — 오늘 가입·지급·잔액 숫자와 경보를 보는 곳',
+  home:'열자마자 보는 곳 — 지금 내가 할 일, Claude가 할 일, 출시를 막는 것만 모았어요',
+  launch:'출시 버튼 누르기 전에 — 빠진 게 없는지 하나씩 확인하는 곳',
+  guide_feedback:'테스터 의견이 들어왔을 때 — 받은 의견과 고친 내용을 적어 두는 곳(프로덕션 신청서 재료)',
+  vendors:'업체에 연락하거나 돈이 오갈 때 — 광고·기프티콘 업체별 상태',
+  records:'지난 일을 찾아볼 때 — 원본 기록 그대로(길어요). 할 일만 보려면 오늘 할 일로',
+  library:'설명·기획을 다시 읽을 때 — 원본 문서·시안 그대로',
+  links:'바깥 사이트(플레이 콘솔·애드몹·서버 등)로 바로 갈 때'
+};
 const FILES = {home:'p_home.js',checklist:'p_checklist.js',status:'p_docs.js',preflight:'p_docs.js',vendors:'p_vendors.js',todo:'p_docs.js',guide_intro:'p_docs.js',guide_plan:'p_docs.js',guide_screen:'p_docs.js',guide_gifti:'p_docs.js',guide_design:'p_docs.js',guide_feedback:'p_docs.js',design:'p_html.js',links:'p_links.js'};
 window.PAGES = {};
 const view = document.getElementById('view');
@@ -130,21 +157,32 @@ function drawNav(cur){
   nav.innerHTML=MENU.map(m=>(m[3]?'<div class="grp">'+m[3]+'</div>':'')+'<a href="#/'+m[0]+'"'+(m[0]===cur?' aria-current="page"':'')+'><i>'+m[2]+'</i>'+m[1]+'</a>').join('');
 }
 let token=0;
+/* 주소 → (메뉴, 실제 화면). 묶음 메뉴는 첫 탭, 옛 주소는 자기가 속한 메뉴로 */
+function resolve(cur){
+  if(TABS[cur]) return {menu:cur,page:TABS[cur][0][0]};
+  for(const k in TABS) if(TABS[k].some(t=>t[0]===cur)) return {menu:k,page:cur};
+  if(MENU.some(m=>m[0]===cur)) return {menu:cur,page:cur};
+  return {menu:'ops',page:'ops'};
+}
 async function route(){
   const cur=(location.hash.replace(/^#\/?/,'')||'ops').split('?')[0];
-  const page=MENU.some(m=>m[0]===cur)?cur:'ops';
-  drawNav(page);
+  const {menu,page}=resolve(cur);
+  drawNav(menu);
   const my=++token;
   if(page==='ops'){
-    view.innerHTML='<iframe class="frame" title="관제실" src="app.html?embed=1&t='+V+'"></iframe>';
+    view.innerHTML='<div class="ops"><p class="when ops-when">'+esc(WHEN.ops)+'</p><iframe class="frame" title="관제실" src="app.html?embed=1&t='+V+'"></iframe></div>';
     return;
   }
   view.innerHTML='<div class="center">불러오는 중...</div>';
   try{
     await loadScript(FILES[page]);
     if(my!==token) return;
-    const root=document.createElement('div');root.className='wrap';
-    view.innerHTML='';view.appendChild(root);
+    const wrap=document.createElement('div');wrap.className='wrap'+(TABS[menu]?' tabbed':'');
+    const tabs=TABS[menu]?'<div class="tabs" role="tablist">'+TABS[menu].map(t=>'<a role="tab" href="#/'+t[0]+'"'+(t[0]===page?' aria-selected="true"':'')+'>'+esc(t[1])+'</a>').join('')+'</div>':'';
+    wrap.innerHTML='<p class="when">'+esc(WHEN[menu]||'')+'</p>'+tabs;
+    const root=document.createElement('div');wrap.appendChild(root);
+    view.innerHTML='';view.appendChild(wrap);
+    const sel=wrap.querySelector('.tabs [aria-selected]');if(sel)sel.scrollIntoView({block:'nearest',inline:'center'});
     await window.PAGES[page].render(root,ctx,page);
   }catch(e){
     if(my!==token) return;
