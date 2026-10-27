@@ -10,7 +10,8 @@
     function preview(c){
       var t=(c.title||'').replace(/\{amount\}/g,'30000').replace(/\{day\}/g,'7'),b=(c.body||'').replace(/\{amount\}/g,'30000').replace(/\{day\}/g,'7');
       return '<div style="background:'+esc(c.bg_color)+';border-radius:20px;padding:24px 20px 12px;text-align:center;max-width:300px">'+
-        (c.emoji?'<div style="font-size:48px">'+esc(c.emoji)+'</div>':'')+
+        '<div style="font-size:60px;line-height:1.1">🐰🎉</div><div class="muted sm" style="font-size:11px">(앱에선 토슬이 축하 그림이 맨 위에 나와요)</div>'+
+        (c.emoji?'<div style="font-size:28px">'+esc(c.emoji)+'</div>':'')+
         '<div style="font-weight:700;margin:8px 0;font-size:'+Number(c.title_size)+'px;color:'+esc(c.title_color)+'">'+esc(t)+'</div>'+
         (b?'<div style="font-size:'+Number(c.body_size)+'px;color:'+esc(c.body_color)+'">'+esc(b)+'</div>':'')+
         '<div style="text-align:right;margin-top:14px;color:#8fa2ff;font-size:14px">'+(c.show_cash_button?'캐시함 보기 &nbsp;&nbsp;':'')+esc(c.button_text||'확인')+'</div></div>';
@@ -20,7 +21,7 @@
       return '<div class="card" data-i="'+i+'"><div style="display:flex;gap:20px;flex-wrap:wrap"><div style="flex:1;min-width:260px">'+
         '<b>'+esc(c.label)+'</b> <span class="muted sm">('+esc(c.event_key)+')</span>'+
         row('이 축하창 쓰기','<input type="checkbox" data-k="enabled"'+(c.enabled?' checked':'')+'> 켜짐 (끄면 예전 기본 안내창이 떠요)')+
-        row('그림 글자(이모지)','<input data-k="emoji" maxlength="8" '+inp+' value="'+f(c,'emoji')+'">')+
+        row('토슬이 아래 작은 그림 글자(이모지, 비우면 안 나와요)','<input data-k="emoji" maxlength="8" '+inp+' value="'+f(c,'emoji')+'">')+
         row('제목 (80자까지)','<input data-k="title" maxlength="80" '+inp+' value="'+f(c,'title')+'">')+
         row('내용 ({amount}=받은 캐시, {day}=출석 일차)','<textarea data-k="body" maxlength="500" rows="3" '+inp+'>'+f(c,'body')+'</textarea>')+
         '<div style="display:flex;gap:10px;flex-wrap:wrap">'+
