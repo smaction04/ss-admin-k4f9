@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="ko"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>슬립세이브 경매 업체 페이지</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<style>
+:root{--bg:#F4F6FB;--card:#fff;--line:#DDE1EE;--ink:#151A2E;--soft:#5B6080;--accent:#3E5FDB;--accent-ink:#fff;--good:#0F8F63;--warn:#9A6B0C;--bad:#C23A50}
+@media (prefers-color-scheme:dark){:root{--bg:#0A0C15;--card:#131725;--line:#262C42;--ink:#EDEFF8;--soft:#8C91AC;--accent:#7C9CFF;--accent-ink:#0A0F22;--good:#46D8A0;--warn:#F0B94E;--bad:#F2687A}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 system-ui,-apple-system,"Malgun Gothic",sans-serif}
+.wrap{max-width:640px;margin:0 auto;padding:20px 16px 60px}
+h1{font-size:21px;margin:0 0 4px}h2{font-size:16px;margin:0 0 8px}
+.sub{color:var(--soft);font-size:13px;margin:0 0 16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px}
+label{display:block;font-weight:600;font-size:13.5px;margin:12px 0 4px}
+input,textarea{width:100%;font:inherit;color:inherit;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 10px}
+textarea{min-height:70px;resize:vertical}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:9px 14px}
+button.p{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
+button:disabled{opacity:.5;cursor:default}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.msg{font-size:13.5px;margin-top:10px;min-height:1.2em}.msg.bad{color:var(--bad)}.msg.ok{color:var(--good)}
+.chip{display:inline-block;font-size:12px;font-weight:700;padding:1px 8px;border-radius:99px;border:1px solid var(--line)}
+.chip.good{color:var(--good)}.chip.warn{color:var(--warn)}.chip.bad{color:var(--bad)}
+.item{padding:10px 0;border-bottom:1px solid var(--line)}.item:last-child{border-bottom:0}
+.soft{color:var(--soft);font-size:13px}
+.thumbs{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.thumbs span{font-size:12px;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:2px 8px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+</style></head><body>
+<div class="wrap"><div id="app"></div></div>
+<script>
+const SUPABASE_URL="https://mdcjpgbhpwjheaprogxr.supabase.co";
+const SUPABASE_ANON_KEY="sb_publishable_jHw2UufXRWscdg4ZitfMGw_DHEagC8n";
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+const app=document.getElementById('app');
+const ST={pending:['허락 대기 중','warn'],rejected:['허락되지 않음','bad'],open:['모집 중','good'],failed:['모집 기간 끝(미달)',''],drawn:['당첨자 나옴 — 배송해 주세요','warn'],
+  shipped:['배송 중','warn'],confirmed:['받았다고 확인됨 — 정산 예정','good'],disputed:['고객이 문제를 알림 — 확인 중','bad'],settled:['정산 완료','good']};
+const E=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const won=n=>Number(n||0).toLocaleString('ko-KR')+'원';
+const dt=s=>s?new Date(s).toLocaleDateString('ko-KR',{month:'numeric',day:'numeric'}):'';
+function say(el,t,k){el.className='msg '+(k||'');el.textContent=t}
+function okName(f){return (f.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,5)||'jpg'}
+function rid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8)}
+
+async function start(){
+  const {data}=await sb.auth.getSession();
+  if(!data.session)return loginView();
+  const me=await sb.rpc('vendor_me');
+  if(me.error)return fail(me.error.message);
+  if(!me.data)return registerView(data.session.user);
+  if(me.data.status==='approved')return homeView(data.session.user,me.data);
+  return waitView(me.data);
+}
+function fail(m){app.innerHTML='<div class="card"><b>불러오지 못했어요</b><p class="soft">'+E(m)+'</p><button id="r">다시 시도</button></div>';document.getElementById('r').onclick=start}
+function top(u){return '<div class="top"><div><h1>경매 업체 페이지</h1></div><div class="soft">'+E(u&&u.email||'')+' <button id="out">나가기</button></div></div>'}
+function bindOut(){const o=document.getElementById('out');if(o)o.onclick=async()=>{await sb.auth.signOut();start()}}
+
+function loginView(){
+  app.innerHTML='<h1>슬립세이브 경매 업체 페이지</h1><p class="sub">상품을 올리고 진행 상황을 보는 곳이에요.</p><div class="card"><h2>로그인 · 가입</h2>'+
+   '<label>이메일</label><input id="em" type="email" autocomplete="email"><label>비밀번호 (6자 이상)</label><input id="pw" type="password" autocomplete="current-password">'+
+   '<div class="row"><button class="p" id="in">로그인</button><button id="up">처음이에요 — 가입하기</button></div><div class="msg" id="m"></div>'+
+   '<p class="soft">가입한 뒤 사업자등록증을 올리면, 대표가 확인하고 허락해요. 허락된 뒤부터 상품을 올릴 수 있어요.</p></div>';
+  const m=document.getElementById('m');
+  const val=()=>({email:document.getElementById('em').value.trim(),password:document.getElementById('pw').value});
+  document.getElementById('in').onclick=async()=>{const r=await sb.auth.signInWithPassword(val());if(r.error)say(m,'로그인하지 못했어요: '+r.error.message,'bad');else start()};
+  document.getElementById('up').onclick=async()=>{
+    const v=val();if(v.password.length<6)return say(m,'비밀번호는 6자 이상이어야 해요.','bad');
+    const r=await sb.auth.signUp(v);if(r.error)return say(m,'가입하지 못했어요: '+r.error.message,'bad');
+    if(r.data.session)start();else say(m,'확인 메일을 보냈어요. 메일의 링크를 누른 뒤 다시 로그인해 주세요.','ok')};
+}
+
+function registerView(user){
+  app.innerHTML=top(user)+'<div class="card"><h2>업체 정보 등록</h2><p class="soft">사업자등록증을 함께 올려 주세요. 대표만 볼 수 있어요.</p>'+
+   '<label>업체 이름</label><input id="cn" maxlength="100"><label>연락처 (전화 또는 이메일)</label><input id="ct" maxlength="100">'+
+   '<label>사업자등록증 (사진 또는 PDF)</label><input id="lf" type="file" accept="image/*,application/pdf">'+
+   '<div class="row"><button class="p" id="go">등록 신청</button></div><div class="msg" id="m"></div></div>';
+  bindOut();const m=document.getElementById('m');
+  document.getElementById('go').onclick=async function(){
+    const cn=document.getElementById('cn').value.trim(),ct=document.getElementById('ct').value.trim(),f=document.getElementById('lf').files[0];
+    if(!cn||!ct||!f)return say(m,'업체 이름·연락처·사업자등록증을 모두 넣어 주세요.','bad');
+    if(f.size>8*1024*1024)return say(m,'파일은 8MB 이하로 올려 주세요.','bad');
+    this.disabled=true;say(m,'올리는 중…');
+    const path=user.id+'/'+rid()+'.'+okName(f);
+    const up=await sb.storage.from('vendor-docs').upload(path,f,{contentType:f.type});
+    if(up.error){this.disabled=false;return say(m,'파일을 올리지 못했어요: '+up.error.message,'bad')}
+    const r=await sb.rpc('vendor_register',{p_company:cn,p_contact:ct,p_license_path:path});
+    if(r.error){this.disabled=false;return say(m,'신청하지 못했어요: '+r.error.message,'bad')}
+    start();
+  };
+}
+
+function waitView(v){
+  const rej=v.status==='rejected';
+  app.innerHTML=top()+'<div class="card"><h2>'+(rej?'이번에는 허락되지 않았어요':'확인 중이에요')+'</h2><p>'+(rej?'아래 사유를 보고 정보를 고쳐 다시 신청할 수 있어요.':'대표가 사업자등록증을 확인하고 있어요. 허락되면 이 화면에서 바로 상품을 올릴 수 있어요.')+'</p>'+
+   (v.admin_note?'<p class="soft">메모: '+E(v.admin_note)+'</p>':'')+'<p class="soft">업체 이름: '+E(v.company_name)+' · 연락처: '+E(v.contact)+'</p>'+
+   '<div class="row"><button id="rf">새로고침</button>'+(rej?'<button class="p" id="re">다시 신청</button>':'')+'</div></div>';
+  bindOut();document.getElementById('rf').onclick=start;
+  const re=document.getElementById('re');if(re)re.onclick=async()=>{const u=(await sb.auth.getUser()).data.user;registerView(u)};
+}
+
+async function homeView(user,v){
+  app.innerHTML=top(user)+'<div class="card"><h2>상품 올리기</h2><p class="soft">'+E(v.company_name)+' · 올리면 대표가 확인한 뒤 앱에 나가요. 참여비와 목표 캐시는 자동으로 정해져요(목표 = 판매 가격의 2배).</p>'+
+   '<label>상품 이름</label><input id="ti" maxlength="100"><label>판매 가격 (원)</label><input id="pr" type="number" min="1000" max="10000000" inputmode="numeric">'+
+   '<label>설명 (한두 줄)</label><textarea id="ds" maxlength="500"></textarea>'+
+   '<label>사진 (1~8장)</label><input id="ph" type="file" accept="image/*" multiple>'+
+   '<div class="row"><button class="p" id="go">올리기</button></div><div class="msg" id="m"></div></div>'+
+   '<div class="card"><h2>내가 올린 상품</h2><div id="ls" class="soft">불러오는 중…</div></div>';
+  bindOut();const m=document.getElementById('m');
+  document.getElementById('go').onclick=async function(){
+    const ti=document.getElementById('ti').value.trim(),pr=parseInt(document.getElementById('pr').value,10),ds=document.getElementById('ds').value.trim(),fs=[...document.getElementById('ph').files];
+    if(!ti)return say(m,'상품 이름을 넣어 주세요.','bad');
+    if(!pr||pr<1000||pr>10000000)return say(m,'판매 가격은 1,000원 이상 10,000,000원 이하로 넣어 주세요.','bad');
+    if(fs.length<1||fs.length>8)return say(m,'사진은 1~8장 올려 주세요.','bad');
+    if(fs.some(f=>f.size>6*1024*1024))return say(m,'사진 한 장은 6MB 이하여야 해요.','bad');
+    this.disabled=true;say(m,'사진 올리는 중…');
+    const urls=[];
+    for(const f of fs){
+      const p=user.id+'/'+rid()+'.'+okName(f);
+      const up=await sb.storage.from('auction-photos').upload(p,f,{contentType:f.type});
+      if(up.error){this.disabled=false;return say(m,'사진을 올리지 못했어요: '+up.error.message,'bad')}
+      urls.push(sb.storage.from('auction-photos').getPublicUrl(p).data.publicUrl);
+    }
+    const r=await sb.rpc('vendor_submit_auction',{p_title:ti,p_description:ds,p_photos:urls,p_price_krw:pr});
+    this.disabled=false;
+    if(r.error)return say(m,'올리지 못했어요: '+r.error.message,'bad');
+    say(m,'올렸어요! 대표가 확인한 뒤 앱에 나가요.','ok');
+    ['ti','pr','ds','ph'].forEach(i=>document.getElementById(i).value='');
+    list();
+  };
+  list();
+}
+async function list(){
+  const ls=document.getElementById('ls');if(!ls)return;
+  const r=await sb.rpc('vendor_my_auctions');
+  if(r.error){ls.textContent='목록을 못 불러왔어요: '+r.error.message;return}
+  if(!r.data.length){ls.textContent='아직 올린 상품이 없어요.';return}
+  ls.innerHTML=r.data.map(i=>{const s=ST[i.status]||[i.status,''];
+    return '<div class="item"><b>'+E(i.title)+'</b> <span class="chip '+s[1]+'">'+E(s[0])+'</span><div class="soft">'+won(i.price_krw)+' · 모인 캐시 '+Number(i.collected_krw).toLocaleString('ko-KR')+' / '+Number(i.goal_krw).toLocaleString('ko-KR')+
+    (i.status==='open'?' · 마감 '+dt(i.deadline):'')+(i.status==='drawn'?' · 당첨 '+dt(i.drawn_at)+' (배송 정보는 대표가 따로 알려 드려요)':'')+(i.status==='settled'?' · 정산 '+won(i.settle_krw):'')+'</div>'+
+    (i.admin_note?'<div class="soft">대표 메모: '+E(i.admin_note)+'</div>':'')+'</div>'}).join('');
+}
+sb.auth.onAuthStateChange((ev)=>{if(ev==='SIGNED_OUT')loginView()});
+start();
+</script></body></html>
