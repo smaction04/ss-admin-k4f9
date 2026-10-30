@@ -115,12 +115,12 @@ async function homeView(user,v){
     if(fs.length<1||fs.length>8)return say(m,'사진은 1~8장 올려 주세요.','bad');
     if(fs.some(f=>f.size>6*1024*1024))return say(m,'사진 한 장은 6MB 이하여야 해요.','bad');
     this.disabled=true;say(m,'사진 올리는 중…');
-    const urls=[];
+    const urls=[]; // 보관함 안 경로만 보낸다. 주소는 뒤쪽에서 만든다
     for(const f of fs){
       const p=user.id+'/'+rid()+'.'+okName(f);
       const up=await sb.storage.from('auction-photos').upload(p,f,{contentType:f.type});
       if(up.error){this.disabled=false;return say(m,'사진을 올리지 못했어요: '+up.error.message,'bad')}
-      urls.push(sb.storage.from('auction-photos').getPublicUrl(p).data.publicUrl);
+      urls.push(p);
     }
     const r=await sb.rpc('vendor_submit_auction',{p_title:ti,p_description:ds,p_photos:urls,p_price_krw:pr});
     this.disabled=false;

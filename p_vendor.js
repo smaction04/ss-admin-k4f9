@@ -31,7 +31,7 @@
             var w=window.open('','_blank');
             var s=await sb.storage.from('vendor-docs').createSignedUrl(v.license_path,120);
             if(s.error||!s.data){if(w)w.close();alert('파일을 열지 못했어요: '+(s.error?s.error.message:'경로 없음'))}
-            else if(w)w.location=s.data.signedUrl;
+            else if(w){w.opener=null;w.location=s.data.signedUrl}
             b.disabled=false;return;
           }
           var note=prompt(a==='yes'?'메모(선택)':'거절 이유(업체에게 보여요, 선택)','');if(note===null){b.disabled=false;return}
