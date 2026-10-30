@@ -267,6 +267,7 @@
 
     <div class="section-label">오늘</div>
     <div class="tiles" id="todayTiles"></div>
+    <div id="todayDetail" hidden style="margin-bottom:1.5rem"></div>
 
     <div class="section-label">누적</div>
     <div class="tiles" id="totalTiles"></div>
@@ -426,8 +427,9 @@ async function loadStats(){
     complianceRow('최근 1년 발행액 (기준 500억 cash)', s.annual_issued_krw, s.alert_annual) + bizRow;
 
   $('todayTiles').innerHTML =
-    tile('오늘 활성 유저 (DAU)', won(s.dau_today), '명') +
-    tile('오늘 지급액', won(s.today_payout_krw), 'cash');
+    tile('오늘 활성 유저 (DAU)', won(s.dau_today), '명 · 눌러서 보기').replace('class="tile"', 'class="tile" data-td="all" style="cursor:pointer"') +
+    tile('오늘 지급액', won(s.today_payout_krw), 'cash · 눌러서 보기').replace('class="tile"', 'class="tile" data-td="paid" style="cursor:pointer"');
+  document.querySelectorAll('#todayTiles [data-td]').forEach((el) => { el.onclick = () => showToday(el.dataset.td); });
 
   $('totalTiles').innerHTML =
     tile('총 가입자', won(s.total_users), '명') +
@@ -436,6 +438,22 @@ async function loadStats(){
 
   $('updatedAt').textContent = '마지막 갱신: ' + new Date().toLocaleString('ko-KR');
   $('dashView').hidden = false;
+}
+
+const TYPE_KO = { gauge_reward: '게이지 적립', roulette_win: '룰렛 당첨', booster_purchase: '부스터 구매', cashout: '환급', adjustment: '운영자 조정' };
+async function showToday(mode){
+  const box = $('todayDetail');
+  if (!box.hidden && box.dataset.mode === mode) { box.hidden = true; return; }
+  box.dataset.mode = mode; box.hidden = false; box.innerHTML = '<p class="muted">불러오는 중…</p>';
+  const { data, error } = await sb.rpc('admin_today_detail');
+  if (error) { box.innerHTML = '<p class="muted">불러오지 못했어요: ' + esc(error.message) + '</p>'; return; }
+  const rows = (data || []).filter((r) => mode === 'all' || r.paid > 0);
+  const sum = rows.reduce((a, r) => a + r.paid, 0);
+  const head = mode === 'all' ? `오늘 기록이 있는 사람 ${rows.length}명` : `오늘 받은 사람 ${rows.length}명 · 합계 ${won(sum)} cash`;
+  box.innerHTML = `<div class="section-label">${head} (눌러서 다시 접기)</div><div class="tbl-wrap" style="margin-bottom:0"><table class="tbl"><thead><tr><th>사용자</th><th>받은 cash</th><th>쓴 cash</th><th>건수</th><th>마지막</th><th>내역</th></tr></thead><tbody>` +
+    rows.map((r) => `<tr><td class="left">${esc(r.email)}</td><td class="mono">${won(r.paid)}</td><td class="mono">${won(r.spent)}</td><td>${r.n}</td><td class="mono">${esc(new Date(r.last_at).toLocaleTimeString('ko-KR'))}</td><td class="left" style="white-space:normal">` +
+      r.items.map((i) => `${esc(TYPE_KO[i.type] || i.type)} ${i.amount > 0 ? '+' : ''}${won(i.amount)}`).join(' · ') + '</td></tr>').join('') +
+    '</tbody></table></div>';
 }
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
