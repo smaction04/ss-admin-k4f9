@@ -25,6 +25,7 @@
     ['1.0.20',21,'2026-10-26',[],[],['홈의 의견 보내기 버튼을 그림 대신 의견 보내기 글자 칩으로 바꿈'],'']];
   window.PAGES.changelog={render:async function(root,ctx){
     var esc=ctx.esc;
+    try{var d=await ctx.getDoc('changelog',true);if(d&&d.body&&d.body.items&&d.body.items.length)VERS=d.body.items}catch(e){}
     function ln(t,a){return a.length?'<div style="margin-top:6px;font-size:13px"><b>'+t+'</b> '+a.map(esc).join(' · ')+'</div>':''}
     var h='<h1 class="pt">버전별 변경 기록</h1><p class="sub">앱 버전마다 뭐가 달라졌는지 · 최신 버전이 맨 위 · 총 '+VERS.length+'개 · 날짜 구간으로 묶은 기록이라 \'확인 필요\' 표시가 있어요</p>';
     VERS.slice().reverse().forEach(function(v){
