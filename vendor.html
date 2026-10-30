@@ -54,7 +54,7 @@ async function start(){
   return waitView(me.data);
 }
 function fail(m){app.innerHTML='<div class="card"><b>불러오지 못했어요</b><p class="soft">'+E(m)+'</p><button id="r">다시 시도</button></div>';document.getElementById('r').onclick=start}
-function top(u){return '<div class="top"><div><h1>경매 업체 페이지</h1></div><div class="soft">'+E(u&&u.email||'')+' <button id="out">나가기</button></div></div>'}
+function topBar(u){return '<div class="top"><div><h1>경매 업체 페이지</h1></div><div class="soft">'+E(u&&u.email||'')+' <button id="out">나가기</button></div></div>'}
 function bindOut(){const o=document.getElementById('out');if(o)o.onclick=async()=>{await sb.auth.signOut();start()}}
 
 function loginView(){
@@ -72,7 +72,7 @@ function loginView(){
 }
 
 function registerView(user){
-  app.innerHTML=top(user)+'<div class="card"><h2>업체 정보 등록</h2><p class="soft">사업자등록증을 함께 올려 주세요. 대표만 볼 수 있어요.</p>'+
+  app.innerHTML=topBar(user)+'<div class="card"><h2>업체 정보 등록</h2><p class="soft">사업자등록증을 함께 올려 주세요. 대표만 볼 수 있어요.</p>'+
    '<label>업체 이름</label><input id="cn" maxlength="100"><label>연락처 (전화 또는 이메일)</label><input id="ct" maxlength="100">'+
    '<label>사업자등록증 (사진 또는 PDF)</label><input id="lf" type="file" accept="image/*,application/pdf">'+
    '<div class="row"><button class="p" id="go">등록 신청</button></div><div class="msg" id="m"></div></div>';
@@ -93,7 +93,7 @@ function registerView(user){
 
 function waitView(v){
   const rej=v.status==='rejected';
-  app.innerHTML=top()+'<div class="card"><h2>'+(rej?'이번에는 허락되지 않았어요':'확인 중이에요')+'</h2><p>'+(rej?'아래 사유를 보고 정보를 고쳐 다시 신청할 수 있어요.':'대표가 사업자등록증을 확인하고 있어요. 허락되면 이 화면에서 바로 상품을 올릴 수 있어요.')+'</p>'+
+  app.innerHTML=topBar()+'<div class="card"><h2>'+(rej?'이번에는 허락되지 않았어요':'확인 중이에요')+'</h2><p>'+(rej?'아래 사유를 보고 정보를 고쳐 다시 신청할 수 있어요.':'대표가 사업자등록증을 확인하고 있어요. 허락되면 이 화면에서 바로 상품을 올릴 수 있어요.')+'</p>'+
    (v.admin_note?'<p class="soft">메모: '+E(v.admin_note)+'</p>':'')+'<p class="soft">업체 이름: '+E(v.company_name)+' · 연락처: '+E(v.contact)+'</p>'+
    '<div class="row"><button id="rf">새로고침</button>'+(rej?'<button class="p" id="re">다시 신청</button>':'')+'</div></div>';
   bindOut();document.getElementById('rf').onclick=start;
@@ -101,7 +101,7 @@ function waitView(v){
 }
 
 async function homeView(user,v){
-  app.innerHTML=top(user)+'<div class="card"><h2>상품 올리기</h2><p class="soft">'+E(v.company_name)+' · 올리면 대표가 확인한 뒤 앱에 나가요. 참여비와 목표 캐시는 자동으로 정해져요(목표 = 판매 가격의 2배).</p>'+
+  app.innerHTML=topBar(user)+'<div class="card"><h2>상품 올리기</h2><p class="soft">'+E(v.company_name)+' · 올리면 대표가 확인한 뒤 앱에 나가요. 참여비와 목표 캐시는 자동으로 정해져요(목표 = 판매 가격의 2배).</p>'+
    '<label>상품 이름</label><input id="ti" maxlength="100"><label>판매 가격 (원)</label><input id="pr" type="number" min="1000" max="10000000" inputmode="numeric">'+
    '<label>설명 (한두 줄)</label><textarea id="ds" maxlength="500"></textarea>'+
    '<label>사진 (1~8장)</label><input id="ph" type="file" accept="image/*" multiple>'+
