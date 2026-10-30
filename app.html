@@ -687,5 +687,6 @@ $('pwLoginBtn').onclick = pwLogin;
 $('pwInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') pwLogin(); });
 $('newPwBtn').onclick = savePassword;
 
-renderDashboard();
+/* 관리센터 메뉴에서 ?tab=users / suspects 로 열면 그 탭을 바로 보여준다 */
+Promise.resolve(renderDashboard()).then(()=>{const t=new URLSearchParams(location.search).get('tab');if(t==='users'||t==='suspects'||t==='records'){showTab(t);if(isEmbed)document.querySelector('.tabs').hidden=true;}});
 </script>
