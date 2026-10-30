@@ -97,8 +97,9 @@ const V = Date.now();
 /* 메뉴 8개 = 관리자가 묻는 질문 순서. [주소, 이름, 아이콘, 묶음 머리글]
    여러 문서를 한 메뉴에 묶은 곳은 TABS 로 탭을 단다. 옛 주소(#/checklist 등)도 그 탭으로 그대로 열린다. */
 const MENU = [
+  ['home','한눈에 보기','🏠','오늘'],
   ['ops','관제실','📊','운영'],['pnl','손익','💹'],['coupon','쿠폰 대상자','🎁'],['notice','공지사항','📢'],['celebrate','축하창','🎉'],['feedback','받은 의견','🐰'],['tester','테스터 신청','🧪'],['roadmap','업데이트 예정','🗺️'],['changelog','버전별 변경 기록','📝'],
-  ['home','오늘 할 일','🏠','할 일'],['launch','출시 준비','🚀'],['guide_feedback','테스트·의견','💬'],['vendors','업체·돈','🤝'],
+  ['launch','출시 준비','🚀','할 일'],['guide_feedback','테스트·의견','💬'],['vendors','업체·돈','🤝'],
   ['records','진행 기록','📋','기록'],
   ['library','참고 문서','📚','자료'],['links','바로가기','🔗']
 ];
@@ -118,7 +119,7 @@ const WHEN = {
   changelog:'새 버전을 올릴 때·테스터에게 바뀐 점을 알릴 때 — 버전마다 뭐가 달라졌는지',
   tester:'테스터 신청자가 어디까지 왔는지 볼 때 — 신청 → 명단 등록 → 앱 가입 → 14일 달성 현황과 바로가기',
   feedback:'테스터가 앱 토끼 버튼으로 보낸 글을 읽을 때 — 최신순(30초마다 자동 갱신)',
-  home:'열자마자 보는 곳 — 지금 내가 할 일, Claude가 할 일, 출시를 막는 것만 모았어요',
+  home:'열자마자 보는 곳 — 테스터·의견·쿠폰·숫자를 한 번에 보고, 내가 할 일과 출시를 막는 것을 확인해요',
   launch:'출시 버튼 누르기 전에 — 빠진 게 없는지 하나씩 확인하는 곳',
   guide_feedback:'테스터 의견이 들어왔을 때 — 받은 의견과 고친 내용을 적어 두는 곳(프로덕션 신청서 재료)',
   vendors:'업체에 연락하거나 돈이 오갈 때 — 광고·기프티콘 업체별 상태',
@@ -170,10 +171,10 @@ function resolve(cur){
   if(TABS[cur]) return {menu:cur,page:TABS[cur][0][0]};
   for(const k in TABS) if(TABS[k].some(t=>t[0]===cur)) return {menu:k,page:cur};
   if(MENU.some(m=>m[0]===cur)) return {menu:cur,page:cur};
-  return {menu:'ops',page:'ops'};
+  return {menu:'home',page:'home'};
 }
 async function route(){
-  const cur=(location.hash.replace(/^#\/?/,'')||'ops').split('?')[0];
+  const cur=(location.hash.replace(/^#\/?/,'')||'home').split('?')[0];
   const {menu,page}=resolve(cur);
   drawNav(menu);
   const my=++token;

@@ -19,8 +19,9 @@
   var SRC={todo:'보류·할 일 장부',status:'현재 상태 한 장',preflight:'출시 점검표'};
   window.PAGES.home={render:async function(root,ctx){
     var esc=ctx.esc,md=ctx.md,won=function(n){return new Intl.NumberFormat('ko-KR').format(n||0)};
-    var res=await Promise.allSettled([ctx.getDoc('status',true),ctx.getDoc('preflight',true),ctx.getDoc('todo',true),ctx.getDoc('checklist',true),ctx.sb.rpc('admin_dashboard_stats'),ctx.listDocs()]);
+    var res=await Promise.allSettled([ctx.getDoc('status',true),ctx.getDoc('preflight',true),ctx.getDoc('todo',true),ctx.getDoc('checklist',true),ctx.sb.rpc('admin_dashboard_stats'),ctx.listDocs(),ctx.sb.rpc('admin_tester_overview'),ctx.sb.rpc('admin_feedback_list',{p_limit:200}),ctx.sb.rpc('admin_coupon_winners')]);
     var st=res[0].value,pf=res[1].value,td=res[2].value,cl=res[3].value,live=res[4].value,docs=res[5].value||[];
+    var tv=res[6].value&&res[6].value.data,fb=res[7].value&&res[7].value.data,cw=res[8].value&&res[8].value.data;
     var all=collect(td,'todo').concat(collect(st,'status'),collect(pf,'preflight'));
     function pick(f){return all.filter(f).sort(function(a,b){return (a.m.p==='core'?0:1)-(b.m.p==='core'?0:1)})}
     function item(x){
@@ -39,8 +40,22 @@
       '.why{font-size:12.5px;color:var(--ink-soft);margin-top:2px;overflow-wrap:anywhere}.src{font-size:11px;color:var(--ink-faint)}'+
       '.card.warnc{border-color:var(--warn)}.card.badc{border-color:var(--bad)}.fold-h{cursor:pointer;font-weight:700;list-style:none}.fold-h::-webkit-details-marker{display:none}'+
       '.g4 .tile span{font-size:18px}.cta{display:inline-block;margin-top:8px;text-decoration:none}</style>'+
-      '<h1 class="pt">오늘 할 일</h1>';
+      '<style>a.tile.lnk{text-decoration:none;color:inherit;display:block}a.tile.lnk:hover{border-color:var(--ink-soft)}.tile small{display:block;font-size:11.5px;color:var(--ink-soft);margin-top:2px}</style><h1 class="pt">한눈에 보기</h1>';
     if(!td&&!st) h+='<div class="card muted">문서를 못 불러왔어요 (서버에 아직 없으면 sync_hub.py 실행 필요)</div>';
+
+
+    /* 0. 한눈에: 각 메뉴에서 꼭 볼 숫자만. 누르면 그 메뉴로 */
+    function ok(r){return r&&r.data!=null&&!r.error}
+    var peek='<div class="sec-h">👀 한눈에 보기</div><div class="grid g4">';
+    if(tv&&tv.summary){var t=tv.summary;
+      peek+='<a class="tile lnk" href="#/tester"><b>🧪 테스터</b><span>'+t.signed_up+' / '+t.applied+'</span><small>가입 / 신청 · 아직 안 들어옴 '+t.not_joined+' · 멈춤 '+t.stalled+' · 14일 달성 '+t.achieved_14+'</small></a>';
+    }else peek+='<a class="tile lnk" href="#/tester"><b>🧪 테스터</b><span>—</span><small>못 불러왔어요</small></a>';
+    peek+=Array.isArray(fb)?'<a class="tile lnk" href="#/feedback"><b>🐰 받은 의견</b><span>'+fb.length+'건</span><small>최근 의견 확인</small></a>':'<a class="tile lnk" href="#/feedback"><b>🐰 받은 의견</b><span>—</span><small>못 불러왔어요</small></a>';
+    if(Array.isArray(cw)){var w=cw.filter(function(r){return !r.sent_at}).length;
+      peek+='<a class="tile lnk" href="#/coupon"><b>🎁 쿠폰 대상자</b><span>'+cw.length+'명</span><small>보낼 사람 '+w+'명</small></a>';
+    }else peek+='<a class="tile lnk" href="#/coupon"><b>🎁 쿠폰 대상자</b><span>—</span><small>못 불러왔어요</small></a>';
+    peek+='<a class="tile lnk" href="#/ops"><b>📊 관제실</b><span>열기</span><small>사용자·의심 보고 확인</small></a></div>';
+    h+=peek;
 
     /* 1. 할 일 두 칸: 나 / Claude */
     var mine=pick(function(x){return x.m.s==='act'&&/사용자/.test(x.m.o||'')});
