@@ -440,6 +440,7 @@ async function loadStats(silent){
 }
 
 const TYPE_KO = { gauge_reward: '게이지 적립', roulette_win: '룰렛 당첨', booster_purchase: '부스터 구매', cashout: '환급', adjustment: '운영자 조정', attendance: '출석 보상', offerwall_reward: '미션 적립', referral_reward_friend: '초대받은 보상', referral_reward_inviter: '초대한 보상', auction_entry: '추첨 참여', auction_refund: '추첨 환불' };
+const cnt = (r, t) => r.items.filter((i) => i.type === t).length;
 async function showToday(mode){
   const box = $('todayDetail');
   if (!box.hidden && box.dataset.mode === mode) { box.hidden = true; return; }
@@ -449,8 +450,8 @@ async function showToday(mode){
   const rows = (data || []).filter((r) => mode === 'all' || r.paid > 0);
   const sum = rows.reduce((a, r) => a + r.paid, 0);
   const head = mode === 'all' ? `오늘 기록이 있는 사람 ${rows.length}명` : `오늘 받은 사람 ${rows.length}명 · 합계 ${won(sum)} cash`;
-  box.innerHTML = `<div class="section-label">${head} (눌러서 다시 접기)</div><div class="tbl-wrap" style="margin-bottom:0"><table class="tbl"><thead><tr><th>사용자</th><th>받은 cash</th><th>쓴 cash</th><th>건수</th><th>마지막</th><th>내역</th></tr></thead><tbody>` +
-    rows.map((r) => `<tr><td class="left">${esc(r.email)}</td><td class="mono">${won(r.paid)}</td><td class="mono">${won(r.spent)}</td><td>${r.n}</td><td class="mono">${esc(new Date(r.last_at).toLocaleTimeString('ko-KR'))}</td><td class="left" style="white-space:normal">` +
+  box.innerHTML = `<div class="section-label">${head} (눌러서 다시 접기)</div><div class="tbl-wrap" style="margin-bottom:0"><table class="tbl"><thead><tr><th>사용자</th><th>받은 cash</th><th>쓴 cash</th><th>룰렛</th><th>출석</th><th>그 밖</th><th>마지막</th><th>내역</th></tr></thead><tbody>` +
+    rows.map((r) => `<tr><td class="left">${esc(r.email)}</td><td class="mono">${won(r.paid)}</td><td class="mono">${won(r.spent)}</td><td>${cnt(r,'roulette_win')}</td><td>${cnt(r,'attendance')}</td><td>${r.items.length - cnt(r,'roulette_win') - cnt(r,'attendance')}</td><td class="mono">${esc(new Date(r.last_at).toLocaleTimeString('ko-KR'))}</td><td class="left" style="white-space:normal">` +
       r.items.map((i) => `${esc(TYPE_KO[i.type] || i.type)} ${i.amount > 0 ? '+' : ''}${won(i.amount)}`).join(' · ') + '</td></tr>').join('') +
     '</tbody></table></div>';
 }
