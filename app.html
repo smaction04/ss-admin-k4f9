@@ -439,7 +439,7 @@ async function loadStats(silent){
   $('dashView').hidden = false;
 }
 
-const TYPE_KO = { gauge_reward: '게이지 적립', roulette_win: '룰렛 당첨', booster_purchase: '부스터 구매', cashout: '환급', adjustment: '운영자 조정' };
+const TYPE_KO = { gauge_reward: '게이지 적립', roulette_win: '룰렛 당첨', booster_purchase: '부스터 구매', cashout: '환급', adjustment: '운영자 조정', attendance: '출석 보상', offerwall_reward: '미션 적립', referral_reward_friend: '초대받은 보상', referral_reward_inviter: '초대한 보상', auction_entry: '추첨 참여', auction_refund: '추첨 환불' };
 async function showToday(mode){
   const box = $('todayDetail');
   if (!box.hidden && box.dataset.mode === mode) { box.hidden = true; return; }
