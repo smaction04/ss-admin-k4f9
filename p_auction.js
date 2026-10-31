@@ -9,10 +9,18 @@
       shipped:['배송 중','warn'],confirmed:['수취 확인 · 정산 전','warn'],disputed:['문제 신고','bad'],settled:['정산 완료','good']};
     function dt(s){return s?new Date(s).toLocaleString('ko-KR',{hour12:false,month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):'—'}
     function won(n){return (n==null?'—':Number(n).toLocaleString('ko-KR')+'원')}
+    function shipInfo(r){
+      if(['drawn','shipped','disputed'].indexOf(r.status)<0)return '';
+      var p=r.shipping;
+      if(!p)return '<div class="sm"><span class="chip warn">받을 곳 아직 없음</span></div>';
+      return '<div class="sm" style="margin-top:4px">받을 곳: <b>'+esc(p.recipient_name)+'</b> · '+esc(p.phone)+'<br>'+
+        (p.postcode?'('+esc(p.postcode)+') ':'')+esc(p.address)+' '+esc(p.address_detail)+
+        (p.memo?'<br>요청: '+esc(p.memo):'')+'<div class="muted sm">개인정보 동의 '+dt(p.agreed_at)+'</div></div>';
+    }
     function actions(r){
       var id=esc(r.id);
       if(r.status==='pending')return '<button class="btn" data-a="approve" data-i="'+id+'">허락</button> <button class="btn" data-a="reject" data-i="'+id+'">거절</button>';
-      if(r.status==='drawn')return '<button class="btn" data-a="ship" data-i="'+id+'">배송 시작 표시</button>';
+      if(r.status==='drawn')return r.shipping?'<button class="btn" data-a="ship" data-i="'+id+'">배송 시작 표시</button>':'<span class="muted sm">당첨자가 받을 곳을 적으면 배송 시작을 누를 수 있어요</span>';
       if(r.status==='disputed')return '<button class="btn" data-a="resolve_ok" data-i="'+id+'">문제 없음(확인 처리)</button> <button class="btn" data-a="resolve_hold" data-i="'+id+'">메모만 남김</button>';
       if(r.status==='confirmed')return '<button class="btn" data-a="settle" data-i="'+id+'">정산 기록</button>';
       return '';
@@ -34,6 +42,7 @@
           h+='<tr><td><b>'+esc(r.title)+'</b><div class="muted sm">'+esc(r.vendor_name)+' · '+esc(r.vendor_contact)+' · 사진 '+esc(r.photo_count)+'장</div>'+
             (r.description?'<div class="muted sm">'+esc(r.description)+'</div>':'')+
             (r.winner_email?'<div class="sm">당첨: '+esc(r.winner_email)+'</div>':'')+
+            shipInfo(r)+
             (r.admin_note?'<div class="muted sm">메모: '+esc(r.admin_note)+'</div>':'')+'</td>'+
             '<td>'+won(r.price_krw)+'</td>'+
             '<td>'+Number(r.collected_krw).toLocaleString('ko-KR')+' / '+Number(r.goal_krw).toLocaleString('ko-KR')+' ('+pct+'%)<div class="muted sm">'+esc(r.entry_count)+'명 · 참여비 '+esc(r.entry_fee)+'</div></td>'+
