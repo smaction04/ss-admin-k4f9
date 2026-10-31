@@ -373,9 +373,8 @@ function complianceRow(label, valueWon, alert){
   </div>`;
 }
 
-async function loadStats(){
-  $('dashView').hidden = true;
-  $('loadingView').hidden = false;
+async function loadStats(silent){
+  if (!silent) { $('dashView').hidden = true; $('loadingView').hidden = false; }
   const { data, error } = await sb.rpc('admin_dashboard_stats');
   $('loadingView').hidden = true;
 
@@ -704,6 +703,15 @@ $('sendCodeBtn').onclick = sendCode;
 $('pwLoginBtn').onclick = pwLogin;
 $('pwInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') pwLogin(); });
 $('newPwBtn').onclick = savePassword;
+
+/* 1분마다 지금 보고 있는 탭 숫자를 저절로 새로 불러온다(화면이 가려졌거나 글을 쓰는 중이면 건너뜀) */
+setInterval(() => {
+  if (document.hidden || $('dashView').hidden && $('loadingView').hidden === false) return;
+  const f = document.activeElement; if (f && /INPUT|TEXTAREA|SELECT/.test(f.tagName)) return;
+  const sel = document.querySelector('.tabs [aria-selected="true"]'); const id = sel ? sel.id : 'tabStats';
+  if (id === 'tabStats') { if ($('todayDetail').hidden) loadStats(true); }
+  else if (id === 'tabUsers') loadUsers(); else if (id === 'tabSuspects') loadSuspects(); else if (id === 'tabRecords') loadRecords();
+}, 60000);
 
 /* 관리센터 메뉴에서 ?tab=users / suspects 로 열면 그 탭을 바로 보여준다 */
 Promise.resolve(renderDashboard()).then(()=>{const t=new URLSearchParams(location.search).get('tab');if(t==='users'||t==='suspects'||t==='records'){showTab(t);if(isEmbed)document.querySelector('.tabs').hidden=true;}});

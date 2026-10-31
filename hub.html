@@ -203,6 +203,35 @@ async function route(){
     view.innerHTML='<div class="center"><div class="card" style="max-width:520px"><b>화면을 못 불러왔어요</b><p class="muted">'+esc(e.message)+'</p><button class="btn" onclick="route()">다시 시도</button></div></div>';
   }
 }
+/* 실시간 새로 고침: 화면을 숨겨서 새로 그린 뒤 한 번에 바꿔 끼운다(깜빡임·스크롤 튐 없음).
+   스스로 30초마다 새로 부르는 메뉴(OWN)와 글 쓰는 메뉴(EDIT)는 건드리지 않는다. */
+const OWN={auction:1,coupon:1,feedback:1,pnl:1,tester:1},EDIT={notice:1,celebrate:1};
+let stamps='',lastHome=0,busy=false;
+async function quiet(){
+  const cur=(location.hash.replace(/^#\/?/,'')||'home').split('?')[0];
+  const {page}=resolve(cur);
+  const old=view.querySelector('.wrap > div:last-child');
+  if(!old||OWN[page]||EDIT[page]||!window.PAGES[page]) return;
+  const my=token,root=document.createElement('div'),y=window.scrollY;
+  await window.PAGES[page].render(root,ctx,page);
+  if(my!==token||!old.isConnected) return;
+  old.replaceWith(root);window.scrollTo(0,y);
+}
+async function tick(){
+  if(busy||document.hidden) return;
+  const f=document.activeElement;if(f&&/INPUT|TEXTAREA|SELECT/.test(f.tagName)) return;
+  busy=true;
+  try{
+    const list=await listDocs();
+    const now=list.map(d=>d.key+'@'+d.updated_at).sort().join('|');
+    const changed=stamps&&now!==stamps;stamps=now;
+    if(changed) for(const k in docCache) delete docCache[k];
+    const cur=(location.hash.replace(/^#\/?/,'')||'home').split('?')[0];
+    const page=resolve(cur).page;
+    const timed=(page==='home'||page==='vendor')&&Date.now()-lastHome>=60000;
+    if(changed||timed){lastHome=Date.now();await quiet();}
+  }catch(e){}finally{busy=false}
+}
 async function start(){
   const {data:{session}}=await sb.auth.getSession();
   if(!session){return gate('로그인이 필요해요. 로그인은 아래 버튼의 화면에서 합니다(비밀번호 → 폰 인증앱 6자리). 끝나면 이 관리센터로 자동으로 돌아와요.')}
@@ -212,7 +241,8 @@ async function start(){
   if(!aal||aal.currentLevel!=='aal2'){return gate('폰 인증앱(2단계) 확인이 아직이에요. 관제실 화면에서 6자리를 입력해 주세요.')}
   document.getElementById('who').textContent=session.user.email;
   const so=document.getElementById('signOut');so.hidden=false;so.onclick=async()=>{await sb.auth.signOut();location.reload()};
-  window.addEventListener('hashchange',route);route();
+  window.addEventListener('hashchange',()=>{lastHome=Date.now();route()});lastHome=Date.now();route();
+  setInterval(tick,30000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)tick()});
 }
 function gate(msg){
   drawNav('');
