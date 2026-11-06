@@ -16,6 +16,7 @@
     guide_screen:{key:'guide_screen',title:'화면 설계',sub:'Phase1_화면가이드.md · Phase1_화면구성안.md',ordered:true,pick:function(){return true}},
     guide_gifti:{key:'guide_gifti',title:'기프티쇼 API',sub:'기프티쇼_API요점.md · 기프티쇼비즈_API_메모.md',ordered:true,pick:function(){return true}},
     guide_feedback:{key:'guide_feedback',title:'테스트·의견',sub:'원본 테스터피드백_수정기록.md — 받은 의견·고친 내용·신청서 초안',ordered:true,pick:function(){return true}},
+    guide_collab:{key:'guide_collab',title:'디자이너 협업',sub:'디자이너협업/ 폴더의 기획안·그림 필요 목록·피그마 구성·계약 항목·전달자료',ordered:true,pick:function(){return true}},
     guide_design:{key:'guide_design',title:'디자인 개편 제안서',sub:'디자인개편_제안서.md — 색·측정기·첫 진입 결정 3가지',ordered:true,pick:function(){return true}}
   };
   /* 상태 어휘(classify.py 와 같음) */
