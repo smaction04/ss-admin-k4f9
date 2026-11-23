@@ -41,7 +41,7 @@
             r.status==='shipped'?'배송 '+dt(r.shipped_at):r.status==='drawn'?'당첨 '+dt(r.drawn_at):r.status==='confirmed'?'확인 '+dt(r.confirmed_at):dt(r.created_at);
           h+='<tr><td><b>'+esc(r.title)+'</b><div class="muted sm">'+esc(r.vendor_name)+' · '+esc(r.vendor_contact)+' · 사진 '+esc(r.photo_count)+'장</div>'+
             (r.description?'<div class="muted sm">'+esc(r.description)+'</div>':'')+
-            (r.winner_email?'<div class="sm">당첨: '+esc(r.winner_email)+'</div>':'')+
+            (r.winner_email?'<div class="sm">당첨: '+ctx.who(r.winner_email)+'</div>':'')+
             shipInfo(r)+
             (r.admin_note?'<div class="muted sm">메모: '+esc(r.admin_note)+'</div>':'')+'</td>'+
             '<td>'+won(r.price_krw)+'</td>'+
@@ -91,6 +91,7 @@
       try{
         if(show&&!box.firstChild)box.innerHTML='<div class="muted">불러오는 중…</div>';
         var r=await sb.rpc('admin_auction_list');
+        await ctx.loadLabels();
         if(r.error)throw new Error(r.error.message);
         draw(r.data||[],new Date().toLocaleTimeString('ko-KR',{hour12:false}));
       }catch(e){

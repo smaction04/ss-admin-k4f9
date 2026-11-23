@@ -19,7 +19,7 @@
         list.forEach(function(r){
           var st=r.sent_at?'<span class="chip good">발송 완료 '+esc(dt(r.sent_at))+'</span>':(r.submitted_at?'<span class="chip warn">발송 대기</span>':'<span class="chip">정보 입력 전</span>');
           var btn=r.sent_at?'<button class="btn" data-u="'+esc(r.user_id)+'" data-s="0">완료 취소</button>':(r.submitted_at?'<button class="btn" data-u="'+esc(r.user_id)+'" data-s="1">발송 완료</button>':'');
-          h+='<tr><td>'+esc(r.email||'-')+'</td><td>'+esc(r.achieved_date)+'</td><td>'+esc(r.name||'—')+'</td><td>'+esc(phone(r.phone))+'</td><td>'+st+'</td><td>'+btn+'</td></tr>';
+          h+='<tr><td>'+ctx.who(r.email)+'</td><td>'+esc(r.achieved_date)+'</td><td>'+esc(r.name||'—')+'</td><td>'+esc(phone(r.phone))+'</td><td>'+st+'</td><td>'+btn+'</td></tr>';
         });
         h+='</table></div>';
       }
@@ -38,6 +38,7 @@
       try{
         if(show&&!box.firstChild)box.innerHTML='<div class="muted">불러오는 중…</div>';
         var r=await sb.rpc('admin_coupon_winners');
+        await ctx.loadLabels();
         if(r.error)throw new Error(r.error.message);
         draw(r.data||[],new Date().toLocaleTimeString('ko-KR',{hour12:false}));
       }catch(e){

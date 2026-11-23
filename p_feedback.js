@@ -12,7 +12,7 @@
         '<div class="muted sm">'+esc(stamp)+' 기준 · 최신순 · 답변은 앱에서 할 수 없어요 · 읽고 나면 "처리함"을 눌러 두세요</div></div>';
       if(!list.length){h+='<div class="card muted">아직 들어온 의견이 없어요.</div>'}
       list.forEach(function(r){
-        h+='<div class="card"><div class="muted sm">'+esc(dt(r.created_at))+' · '+esc(r.email||'-')+' · 앱 '+esc(r.app_version||'-')+' · '+esc(r.device||'-')+'</div>'+
+        h+='<div class="card"><div class="muted sm">'+esc(dt(r.created_at))+' · '+ctx.who(r.email)+' · 앱 '+esc(r.app_version||'-')+' · '+esc(r.device||'-')+'</div>'+
           '<div style="white-space:pre-wrap;margin-top:6px">'+esc(r.message)+'</div>'+
           '<div style="margin-top:8px">'+(r.handled_at?'<span class="chip good">처리함 '+esc(dt(r.handled_at))+'</span> <button class="btn" data-id="'+r.id+'" data-h="0">되돌리기</button>':'<button class="btn" data-id="'+r.id+'" data-h="1">처리함</button>')+'</div></div>';
       });
@@ -31,6 +31,7 @@
       try{
         if(show&&!box.firstChild)box.innerHTML='<div class="muted">불러오는 중…</div>';
         var r=await sb.rpc('admin_feedback_list',{p_limit:200});
+        await ctx.loadLabels();
         if(r.error)throw new Error(r.error.message);
         draw(r.data||[],new Date().toLocaleTimeString('ko-KR',{hour12:false}));
       }catch(e){
