@@ -232,14 +232,18 @@
       <button class="tab" role="tab" id="tabRecords" aria-selected="false">전체 기록</button>
       <button class="tab" role="tab" id="tabUsers" aria-selected="false">사용자</button>
       <button class="tab" role="tab" id="tabSuspects" aria-selected="false">의심 유저</button>
+      <button class="tab" role="tab" id="tabCount" aria-selected="false">카운팅 점검</button>
+    </div>
+
+    <div id="countPane" hidden>
+      <div class="section-label">시간 카운팅 점검 (지금 걸린 사람)</div>
+      <p class="note">나쁜 짓을 찾는 곳이 아니라, 앱이 시간을 제대로 못 쌓는 사람을 찾아 고치기 위한 곳이에요. 초기화 뒤 보고가 없거나(시작안됨), 쌓인 시간이 0이거나(값0), 보고가 끊긴(중간멈춤) 사람이에요. 탈퇴·정지한 사람은 빠져요. 폰을 쓰는 중이라 0인 사람도 섞일 수 있어요. 매시 5분에 확인해 새로 걸린 사람만 카톡으로 알려요.</p>
+      <div id="countCheckBox"></div>
     </div>
 
     <div id="suspectsPane" hidden>
       <div class="section-label">의심 유저 (의심 신호가 있는 사용자 · 신호 많은 순)</div>
       <p class="note">각 사용자 아래에 <b>왜 의심되는지(이유)</b>와 근거를 적었어요. 이상 신호가 계속 쌓이면(24시간 안 3회) 서버가 자동으로 활동을 정지시키고, 여기서 '로그·조치'를 눌러 사용자 탭에서 정지 해제나 탈퇴 처리를 할 수 있어요.</p>
-      <div class="section-label">시간 카운팅 점검 (지금 걸린 사람)</div>
-      <p class="note">초기화 뒤 보고가 없거나(시작안됨), 쌓인 시간이 0이거나(값0), 보고가 끊긴(중간멈춤) 사람이에요. 탈퇴·정지한 사람은 빠져요. 폰을 쓰는 중이라 0인 사람도 섞일 수 있어요. 매시 5분에 확인해 새로 걸린 사람만 카톡으로 알려요.</p>
-      <div id="countCheckBox"></div>
       <div id="suspectList"></div>
 
       <div class="section-label" style="margin-top:1.6rem">이상 신호 기록 (최근 순)</div>
@@ -469,6 +473,8 @@ function showTab(name){
   $('recordsPane').hidden = name !== 'records';
   $('usersPane').hidden = name !== 'users';
   $('suspectsPane').hidden = name !== 'suspects';
+  $('countPane').hidden = name !== 'count';
+  $('tabCount').setAttribute('aria-selected', String(name === 'count'));
   $('tabStats').setAttribute('aria-selected', String(name === 'stats'));
   $('tabRecords').setAttribute('aria-selected', String(name === 'records'));
   $('tabUsers').setAttribute('aria-selected', String(name === 'users'));
@@ -476,6 +482,7 @@ function showTab(name){
   if (name === 'records') loadRecords();
   if (name === 'users') loadUsers();
   if (name === 'suspects') loadSuspects();
+  if (name === 'count') loadCountCheck();
 }
 
 // 의심 유저 탭: 사용자마다 카드로, 의심되는 이유(why)와 근거(detail)를 줄줄이 보여준다.
@@ -503,7 +510,6 @@ async function loadSuspects(){
     list.querySelectorAll('button[data-open]').forEach(b => b.onclick = () => openUserFromSuspects(data[Number(b.dataset.open)].user_id));
   }
   loadAnomalies();
-  loadCountCheck();
 }
 
 // 시간 카운팅 점검: 지금 걸린 사람 목록 + 기준(지켜볼 일수·끊김 시간) 바꾸기
@@ -721,6 +727,7 @@ $('tabStats').onclick = () => showTab('stats');
 $('tabRecords').onclick = () => showTab('records');
 $('tabUsers').onclick = () => showTab('users');
 $('tabSuspects').onclick = () => showTab('suspects');
+$('tabCount').onclick = () => showTab('count');
 $('sendCodeBtn').onclick = sendCode;
 $('pwLoginBtn').onclick = pwLogin;
 $('pwInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') pwLogin(); });
@@ -736,5 +743,5 @@ setInterval(() => {
 }, 60000);
 
 /* 관리센터 메뉴에서 ?tab=users / suspects 로 열면 그 탭을 바로 보여준다 */
-Promise.resolve(renderDashboard()).then(()=>{const t=new URLSearchParams(location.search).get('tab');if(t==='users'||t==='suspects'||t==='records'){showTab(t);if(isEmbed)document.querySelector('.tabs').hidden=true;}});
+Promise.resolve(renderDashboard()).then(()=>{const t=new URLSearchParams(location.search).get('tab');if(t==='users'||t==='suspects'||t==='count'||t==='records'){showTab(t);if(isEmbed)document.querySelector('.tabs').hidden=true;}});
 </script>
