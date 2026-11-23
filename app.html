@@ -573,9 +573,9 @@ async function loadUsers(){
   }
   usersCache = data;
   $('usersTable').innerHTML =
-    `<tr><th class="left">계정</th><th>상태</th><th>가입</th><th>마지막 로그인</th><th>잔액(cash)</th><th>누적 적립(cash)</th><th>룰렛 횟수</th><th>마지막 활동</th></tr>` +
+    `<tr><th class="left">계정</th><th>상태</th><th>가입</th><th>마지막 로그인</th><th>잔액(cash)</th><th title="기프티콘 환불은 뺀 값">누적 적립(cash)</th><th title="기프티콘 신청 횟수 / 그중 환불된 횟수">기프티콘 시도(환불)</th><th>룰렛 횟수</th><th>마지막 활동</th></tr>` +
     data.map((r, i) => `<tr data-i="${i}" style="cursor:pointer"><td class="left">${r.email || r.user_id ? who(r) : '(이메일 없음)'}${r.is_admin ? ' <span class="pill good">관리자</span>' : ''}</td><td>${statusPill(r)}</td><td class="mono">${esc(kstFull(r.created_at))}</td>` +
-      `<td class="mono">${esc(kstFull(r.last_sign_in_at))}</td><td class="mono">${won(r.balance_krw)}</td><td class="mono">${won(r.total_earned_krw)}</td>` +
+      `<td class="mono">${esc(kstFull(r.last_sign_in_at))}</td><td class="mono">${won(r.balance_krw)}</td><td class="mono">${won(r.total_earned_krw)}</td><td class="mono" title="환불 합계 ${won(r.gifticon_refund_krw||0)}">${r.gifticon_tries ? `${r.gifticon_tries}회` + (r.gifticon_refunds ? ` (환불 ${r.gifticon_refunds}회 · ${won(r.gifticon_refund_krw)})` : '') : '-'}</td>` +
       `<td class="mono">${won(r.spins)}</td><td class="mono">${esc(kstFull(r.last_activity))}</td></tr>`).join('');
   $('usersTable').querySelectorAll('tr[data-i]').forEach(tr => tr.onclick = () => showUserLog(usersCache[Number(tr.dataset.i)]));
 }
