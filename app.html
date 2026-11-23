@@ -237,6 +237,9 @@
     <div id="suspectsPane" hidden>
       <div class="section-label">의심 유저 (의심 신호가 있는 사용자 · 신호 많은 순)</div>
       <p class="note">각 사용자 아래에 <b>왜 의심되는지(이유)</b>와 근거를 적었어요. 이상 신호가 계속 쌓이면(24시간 안 3회) 서버가 자동으로 활동을 정지시키고, 여기서 '로그·조치'를 눌러 사용자 탭에서 정지 해제나 탈퇴 처리를 할 수 있어요.</p>
+      <div class="section-label">시간 카운팅 점검 (지금 걸린 사람)</div>
+      <p class="note">초기화 뒤 보고가 없거나(시작안됨), 쌓인 시간이 0이거나(값0), 보고가 끊긴(중간멈춤) 사람이에요. 탈퇴·정지한 사람은 빠져요. 폰을 쓰는 중이라 0인 사람도 섞일 수 있어요. 매시 5분에 확인해 새로 걸린 사람만 카톡으로 알려요.</p>
+      <div id="countCheckBox"></div>
       <div id="suspectList"></div>
 
       <div class="section-label" style="margin-top:1.6rem">이상 신호 기록 (최근 순)</div>
@@ -500,6 +503,24 @@ async function loadSuspects(){
     list.querySelectorAll('button[data-open]').forEach(b => b.onclick = () => openUserFromSuspects(data[Number(b.dataset.open)].user_id));
   }
   loadAnomalies();
+  loadCountCheck();
+}
+
+// 시간 카운팅 점검: 지금 걸린 사람 목록 + 기준(지켜볼 일수·끊김 시간) 바꾸기
+async function loadCountCheck(){
+  const box = $('countCheckBox');
+  const { data, error } = await sb.rpc('admin_count_check');
+  if (error) { box.innerHTML = `<div class="note">불러오기 실패: ${esc(error.message)} (db/0092를 Supabase에서 실행했는지 확인)</div>`; return; }
+  const wd = data[0] ? data[0].watch_days : 7, bh = data[0] ? data[0].break_hours : 3;
+  box.innerHTML = (data.length ? `<div class="tbl-wrap"><table class="tbl"><tr><th class="left">이메일</th><th>종류</th><th>이번 하루 시작</th><th>마지막 보고</th></tr>` +
+    data.map(r => `<tr><td class="left">${esc(r.email)}</td><td>${esc(r.kind)}</td><td class="mono">${esc(kstFull(r.cycle_start))}</td><td class="mono">${esc(kstFull(r.last_report))}</td></tr>`).join('') + '</table></div>'
+    : '<div class="note" style="font-size:0.9rem">지금 걸린 사람이 없어요 👍</div>') +
+    `<div class="note" style="margin-top:0.6rem">지켜볼 기간 <input id="ccWd" type="number" min="1" max="30" value="${wd}" style="width:3.5rem"> 일 · 끊김 기준 <input id="ccBh" type="number" min="1" max="24" value="${bh}" style="width:3.5rem"> 시간 <button class="btn" id="ccSave">저장</button></div>`;
+  $('ccSave').onclick = async () => {
+    const { error: e2 } = await sb.rpc('admin_count_check_set', { p_watch_days: Number($('ccWd').value), p_break_hours: Number($('ccBh').value) });
+    if (e2) { alert('저장 실패: ' + e2.message); return; }
+    loadCountCheck();
+  };
 }
 
 // 의심 유저 카드에서 '로그·조치 열기' → 사용자 탭으로 이동해 그 사용자의 로그와 중지/해제/탈퇴 버튼을 연다.
