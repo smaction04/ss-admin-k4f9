@@ -111,7 +111,7 @@ const TABS = {
   content:[['notice','공지사항'],['celebrate','축하창'],['roadmap','업데이트 예정'],['changelog','버전별 변경 기록']],
   launch:[['preflight','출시 점검표'],['checklist','앱 품질 점검판']],
   records:[['status','현재 상태 한 장'],['todo','보류·할 일 장부']],
-  library:[['guide_intro','서비스 소개서'],['guide_plan','단독 실행 기획서'],['guide_screen','화면 설계'],['guide_gifti','기프티쇼 API'],['guide_design','디자인 개편 제안서'],['guide_collab','디자이너 협업'],['guide_alerts','알림 수정 결과'],['design','디자인 시안'],['links','바로가기']]
+  library:[['guide_intro','서비스 소개서'],['guide_plan','단독 실행 기획서'],['guide_screen','화면 설계'],['guide_gifti','기프티쇼 API'],['guide_design','디자인 개편 제안서'],['guide_collab','디자이너 협업'],['guide_alerts','알림 수정 결과'],['guide_count','시간 세기·알림 규칙'],['design','디자인 시안'],['links','바로가기']]
 };
 /* 화면 맨 위 한 줄: 언제 보는 곳인지 */
 const WHEN = {
@@ -134,6 +134,7 @@ const WHEN = {
   launch:'출시 버튼 누르기 전에 — 빠진 게 없는지 하나씩 확인하는 곳',
   guide_collab:'디자이너와 일할 때 — 무슨 그림이 어디에 필요한지, 피그마·계약 항목, 넘길 자료를 한곳에서 볼 때',
   guide_alerts:'알림이 무엇이 바뀌었고 무엇이 남았는지 볼 때',
+  guide_count:'시간을 언제 보내고 알림이 어떤 기준으로 오는지 볼 때',
   vendors:'업체에 연락하거나 돈이 오갈 때 — 광고·기프티콘 업체별 상태',
   records:'지난 일을 찾아볼 때 — 원본 기록 그대로(길어요). 할 일만 보려면 오늘 할 일로',
   library:'설명·기획을 다시 읽을 때 — 원본 문서·시안 그대로',
@@ -142,7 +143,7 @@ const WHEN = {
   content:'앱에 보이는 글을 쓰고 고칠 때 — 공지·축하창·업데이트 예정·변경 기록',
   links:'바깥 사이트(플레이 콘솔·애드몹·서버 등)로 바로 갈 때'
 };
-const FILES = {pnl:'p_pnl.js',coupon:'p_coupon.js',auction:'p_auction.js',vendor:'p_vendor.js',notice:'p_notice.js',celebrate:'p_celebrate.js',feedback:'p_feedback.js',tester:'p_tester.js',roadmap:'p_roadmap.js',changelog:'p_changelog.js',home:'p_home.js',checklist:'p_checklist.js',status:'p_docs.js',preflight:'p_docs.js',vendors:'p_vendors.js',todo:'p_docs.js',guide_intro:'p_docs.js',guide_plan:'p_docs.js',guide_screen:'p_docs.js',guide_gifti:'p_docs.js',guide_design:'p_docs.js',guide_collab:'p_docs.js',guide_alerts:'p_docs.js',design:'p_html.js',links:'p_links.js'};
+const FILES = {pnl:'p_pnl.js',coupon:'p_coupon.js',auction:'p_auction.js',vendor:'p_vendor.js',notice:'p_notice.js',celebrate:'p_celebrate.js',feedback:'p_feedback.js',tester:'p_tester.js',roadmap:'p_roadmap.js',changelog:'p_changelog.js',home:'p_home.js',checklist:'p_checklist.js',status:'p_docs.js',preflight:'p_docs.js',vendors:'p_vendors.js',todo:'p_docs.js',guide_intro:'p_docs.js',guide_plan:'p_docs.js',guide_screen:'p_docs.js',guide_gifti:'p_docs.js',guide_design:'p_docs.js',guide_collab:'p_docs.js',guide_alerts:'p_docs.js',guide_count:'p_docs.js',design:'p_html.js',links:'p_links.js'};
 window.PAGES = {};
 const view = document.getElementById('view');
 const docCache = {};
