@@ -132,9 +132,9 @@
     font-size:0.75rem; color:var(--ink-faint); padding-top:0.75rem; border-top:1px solid var(--line);
   }
 
-  .tabs{ display:flex; gap:0.4rem; margin-bottom:1.5rem; }
+  .tabs{ display:flex; flex-wrap:wrap; gap:0.4rem; margin-bottom:1.5rem; }
   .tab{
-    font-family:inherit; font-weight:700; font-size:0.82rem; cursor:pointer; color:var(--ink-soft);
+    white-space:nowrap; font-family:inherit;font-weight:700; font-size:0.82rem; cursor:pointer; color:var(--ink-soft);
     background:transparent; border:1px solid var(--line); border-radius:0.6rem; padding:0.5rem 1rem;
   }
   .tab[aria-selected="true"]{ background:var(--accent); color:var(--accent-ink); border-color:transparent; }
@@ -233,6 +233,13 @@
       <button class="tab" role="tab" id="tabUsers" aria-selected="false">사용자</button>
       <button class="tab" role="tab" id="tabSuspects" aria-selected="false">의심 유저</button>
       <button class="tab" role="tab" id="tabCount" aria-selected="false">카운팅 점검</button>
+      <button class="tab" role="tab" id="tabSwitch" aria-selected="false">계정 바뀜</button>
+    </div>
+
+    <div id="switchPane" hidden>
+      <div class="section-label">같은 폰에서 계정이 바뀐 기록 (최근 200건)</div>
+      <p class="note">한 폰에서 쓰던 계정 대신 다른 계정으로 들어오면 남아요. '기존 계정'의 보고가 끊긴 까닭이 계정 바뀜인지 볼 때 써요. 이 기록 기능이 든 새 앱을 설치한 뒤에 바뀐 것만 남고, 앱을 지웠다 다시 깔면 그 전 계정은 알 수 없어요.</p>
+      <div id="switchBox"></div>
     </div>
 
     <div id="countPane" hidden>
@@ -496,6 +503,8 @@ function showTab(name){
   $('usersPane').hidden = name !== 'users';
   $('suspectsPane').hidden = name !== 'suspects';
   $('countPane').hidden = name !== 'count';
+  $('switchPane').hidden = name !== 'switch';
+  $('tabSwitch').setAttribute('aria-selected', String(name === 'switch'));
   $('tabCount').setAttribute('aria-selected', String(name === 'count'));
   $('tabStats').setAttribute('aria-selected', String(name === 'stats'));
   $('tabRecords').setAttribute('aria-selected', String(name === 'records'));
@@ -505,6 +514,19 @@ function showTab(name){
   if (name === 'users') loadUsers();
   if (name === 'suspects') loadSuspects();
   if (name === 'count') loadCountCheck();
+  if (name === 'switch') loadSwitches();
+}
+
+// 같은 폰에서 계정이 바뀐 기록(db/0102): 기존 계정 → 지금 계정, 각 계정의 마지막 보고
+async function loadSwitches(){
+  const box = $('switchBox');
+  const { data, error } = await sb.rpc('admin_account_switches');
+  await loadLabels();
+  if (error) { box.innerHTML = `<div class="note">불러오기 실패: ${esc(error.message)} (db/0102를 Supabase에서 실행했는지 확인)</div>`; return; }
+  const cell = (id, email, last) => `${who({ user_id: id, email })}<div class="muted" style="font-size:12px">마지막 보고 ${esc(kstFull(last))}</div>`;
+  box.innerHTML = data.length ? `<div class="tbl-wrap"><table class="tbl"><tr><th class="left">바뀐 때</th><th class="left">기존 계정</th><th class="left">바뀌어 들어온 계정</th></tr>` +
+    data.map(r => `<tr><td class="left mono">${esc(kstFull(r.switched_at))}</td><td class="left">${cell(r.prev_user_id, r.prev_email, r.prev_last_report)}</td><td class="left">${cell(r.user_id, r.email, r.last_report)}</td></tr>`).join('') + '</table></div>'
+    : '<div class="note" style="font-size:0.9rem">아직 남은 기록이 없어요</div>';
 }
 
 // 의심 유저 탭: 사용자마다 카드로, 의심되는 이유(why)와 근거(detail)를 줄줄이 보여준다.
@@ -755,6 +777,7 @@ $('tabRecords').onclick = () => showTab('records');
 $('tabUsers').onclick = () => showTab('users');
 $('tabSuspects').onclick = () => showTab('suspects');
 $('tabCount').onclick = () => showTab('count');
+$('tabSwitch').onclick = () => showTab('switch');
 $('sendCodeBtn').onclick = sendCode;
 $('pwLoginBtn').onclick = pwLogin;
 $('pwInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') pwLogin(); });
@@ -766,9 +789,9 @@ setInterval(() => {
   const f = document.activeElement; if (f && /INPUT|TEXTAREA|SELECT/.test(f.tagName)) return;
   const sel = document.querySelector('.tabs [aria-selected="true"]'); const id = sel ? sel.id : 'tabStats';
   if (id === 'tabStats') { if ($('todayDetail').hidden) loadStats(true); }
-  else if (id === 'tabUsers') loadUsers(); else if (id === 'tabSuspects') loadSuspects(); else if (id === 'tabRecords') loadRecords();
+  else if (id === 'tabUsers') loadUsers(); else if (id === 'tabSuspects') loadSuspects(); else if (id === 'tabRecords') loadRecords(); else if (id === 'tabSwitch') loadSwitches();
 }, 60000);
 
 /* 관리센터 메뉴에서 ?tab=users / suspects 로 열면 그 탭을 바로 보여준다 */
-Promise.resolve(renderDashboard()).then(()=>{const t=new URLSearchParams(location.search).get('tab');if(t==='users'||t==='suspects'||t==='count'||t==='records'){showTab(t);if(isEmbed)document.querySelector('.tabs').hidden=true;}});
+Promise.resolve(renderDashboard()).then(()=>{const t=new URLSearchParams(location.search).get('tab');if(t==='users'||t==='suspects'||t==='count'||t==='switch'||t==='records'){showTab(t);if(isEmbed)document.querySelector('.tabs').hidden=true;}});
 </script>

@@ -106,7 +106,7 @@ const MENU = [
 /* 2026-11-23 정리 기준: 메뉴는 8개 이내·2단계까지, "지금 무슨 일을 하나"로 묶고(사람·돈·앱 내용), 드물게 보는 건 탭 안으로.
    옛 주소(#/coupon 등)는 그 탭으로 그대로 열린다. */
 const TABS = {
-  people:[['users','사용자'],['suspects','의심 유저'],['count','카운팅 점검'],['tester','테스터 신청'],['feedback','받은 의견'],['coupon','쿠폰 대상자']],
+  people:[['users','사용자'],['suspects','의심 유저'],['count','카운팅 점검'],['switch','계정 바뀜'],['tester','테스터 신청'],['feedback','받은 의견'],['coupon','쿠폰 대상자']],
   money:[['pnl','손익'],['auction','경매'],['vendor','업체 가입 허락'],['vendors','업체 연락·돈']],
   content:[['notice','공지사항'],['celebrate','축하창'],['roadmap','업데이트 예정'],['changelog','버전별 변경 기록']],
   launch:[['preflight','출시 점검표'],['checklist','앱 품질 점검판']],
@@ -128,6 +128,7 @@ const WHEN = {
   feedback:'테스터가 앱 토끼 버튼으로 보낸 글을 읽을 때 — 최신순(30초마다 자동 갱신)',
   users:'앱에 가입한 사람들을 한 줄씩 봐요',
   count:'앱이 시간을 제대로 못 쌓는 사람을 찾아 고칠 때 — 시작 안 됨·값 0·중간에 멈춘 사람',
+  switch:'같은 폰에서 다른 계정으로 들어온 기록 — 기존 계정과 지금 계정을 함께 볼 때(보고가 끊긴 사람을 확인할 때)',
   suspects:'가능한 시간보다 부풀려 보고한 사람 등 수상한 사용자를 모아 봐요',
   home:'열자마자 보는 곳 — 테스터·의견·쿠폰·숫자를 한 번에 보고, 내가 할 일과 출시를 막는 것을 확인해요',
   launch:'출시 버튼 누르기 전에 — 빠진 게 없는지 하나씩 확인하는 곳',
@@ -204,7 +205,7 @@ async function route(){
   const {menu,page}=resolve(cur);
   drawNav(menu);
   const my=++token;
-  if(page==='ops'||page==='users'||page==='suspects'||page==='count'){
+  if(page==='ops'||page==='users'||page==='suspects'||page==='count'||page==='switch'){
     const tb=TABS[menu]?'<div class="tabs" role="tablist" style="margin:0 12px 8px">'+TABS[menu].map(t=>'<a role="tab" href="#/'+t[0]+'"'+(t[0]===page?' aria-selected="true"':'')+'>'+esc(t[1])+'</a>').join('')+'</div>':'';
     view.innerHTML='<div class="ops">'+tb+'<p class="when ops-when">'+esc(WHEN[page]||WHEN[menu]||'')+'</p><iframe class="frame" title="관제실" src="app.html?embed=1'+(page==='ops'?'':'&tab='+page)+'&t='+V+'"></iframe></div>';
     return;
