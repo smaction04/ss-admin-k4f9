@@ -11,7 +11,7 @@
   window.PAGES.roadmap={render:async function(root,ctx){
     var esc=ctx.esc;
     try{var d=await ctx.getDoc('roadmap',true);if(d&&d.body&&d.body.items&&d.body.items.length)ITEMS=d.body.items}catch(e){}
-    var h='<h1 class="pt">업데이트 예정</h1><p class="sub">2026-10-26 사용자 제안 · 하나씩 물어보며 정하는 중</p><div class="sec-h">후보 7개</div>';
+    var h='<h1 class="pt">업데이트 예정</h1><p class="sub">2026-10-26 사용자 제안 · 하나씩 물어보며 정하는 중</p><div class="sec-h">후보 '+ITEMS.length+'개</div>';
     ITEMS.forEach(function(i){h+='<div class="card"><b>'+esc(i[0])+'</b><div class="muted" style="font-size:12px;margin-top:6px">상태: '+esc(i[1])+'</div></div>'});
     root.innerHTML=h;
   }};
